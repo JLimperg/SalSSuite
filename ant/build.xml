@@ -1,0 +1,263 @@
+                        <!-- GENERAL INFORMATION -->
+
+<!--
+This ant script mainly creates various jar files from pre-compiled classes of the SalSSuite programme.
+
+The most important targets are:
+    jar      -> Creates jar files for all applications the SalSSuite consists of.
+    clean    -> Cleans everything up; only the created jar files remain.
+    install  -> Starts the SalSSuite installer.
+
+These targets are built upon each other; invoking install automatically also
+causes the jars to be built and the temporary files to be deleted.
+
+Furthermore we have
+    javadoc  -> Generates javadoc for the whole programme.
+
+And the grand unification of all above:
+    dist     -> Makes jars, cleans everything up, and generates javadoc.
+
+For testing purpose there is also a target to clean everything:
+    Cleanall -> deletes all files and folders any of the targets might have created.
+-->
+
+<project name="salssuite" default="install" basedir=".">
+
+                             <!-- PROPERTIES -->
+
+<!-- Change these properties to adjust the folders and files according to your needs.
+-->
+
+<!-- source files and directories -->
+
+<property name="source_sources_dir"
+    location="/home/jannis/SalSSuite/git-repo/src" />
+<property name="source_classes_dir"
+    location="/home/jannis/SalSSuite/git-repo/build/classes" />
+<property name="source_derby_dir"
+    location="/home/jannis/SalSSuite/git-repo/lib/derby/lib" />
+<property name="source_std_api_javadoc"
+    value="http://download.oracle.com/javase/6/docs/api/" />
+
+<!-- target files and directories -->
+
+<property name="target_jars_dir" location="dist" />
+<property name="target_javadoc_dir" location="dist/javadoc" />
+
+<!-- temporary files and directories -->
+
+<property name="temporary_classes_dir" location="tmp" />
+
+
+                            <!-- TARGETS -->
+
+<!-- Move all the needed files to one directoy. This is mostly done for convenience. -->
+
+<target name="movetoonedir"
+    description="Moves all the needed class files to one directory to make bundling easier">
+
+    <mkdir dir="${temporary_classes_dir}" />
+    <mkdir dir="${target_jars_dir}" />
+
+    <!-- Move class files from NetBeans folder to tmp folder -->
+    <copy todir="${temporary_classes_dir}">
+        <fileset dir="${source_classes_dir}" />
+    </copy>
+    
+    <!-- Move derby jar files to tmp folder -->
+    <copy todir="${temporary_classes_dir}">
+        <fileset dir="${source_derby_dir}" />
+    </copy>
+</target>
+
+                            <!-- JAR TARGETS -->
+
+<!-- Create all jar files -->
+
+<target name="jar"
+    depends="jarinstaller, jaruninstaller, jarserver, jardutyclient, jarmagazineclient,
+             jaraccountingclient, jaremploymentclient, jaradminclient"
+    description="Makes jars for Server, Clients, and Installers">
+</target>
+
+<!-- Single targets for creating jar files -->
+
+<target name="jarinstaller" depends="movetoonedir"
+    description="Bundles all relevant classes to one installer jar file">
+    <jar destfile="${target_jars_dir}/Installer.jar"
+        basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+        <manifest>
+            <attribute name="Main-Class" value="salssuite.util.gui.Installer" />
+        </manifest>      
+    </jar>
+    <chmod file="${target_jars_dir}/Installer.jar" perm="a+x" />
+</target>
+
+<target name="jaruninstaller" depends="movetoonedir"
+    description="Bundles all relevant classes to one uninstaller jar file">
+    <jar destfile="${target_jars_dir}/Uninstaller.jar"
+        basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+        <manifest>
+            <attribute name="Main-Class" value="salssuite.util.gui.Uninstaller" />
+        </manifest>     
+    </jar>
+    <chmod file="${target_jars_dir}/Uninstaller.jar" perm="a+x" />
+</target>
+
+<target name="jarserver" depends="movetoonedir"
+    description="Bundles all relevant classes to one server jar file">
+    <jar destfile="${target_jars_dir}/Server.jar"
+    basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+        <manifest>
+            <attribute name="Main-Class" value="salssuite.server.ServerLauncher" />
+        </manifest>
+        <zipfileset src="${temporary_classes_dir}/derby.jar" />
+        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+        <zipfileset src="${temporary_classes_dir}/derbynet.jar" />
+    </jar>
+    <chmod file="${target_jars_dir}/Server.jar" perm="a+x" />
+</target>
+
+<target name="jardutyclient" depends="movetoonedir"
+    description="Bundles all relevant classes to one duty client jar file">
+    <jar destfile="${target_jars_dir}/Zollclient.jar" 
+    basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+        <manifest>
+            <attribute name="Main-Class" value="salssuite.clients.duty.DutyClient" />
+        </manifest>
+        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+    </jar>
+    <chmod file="${target_jars_dir}/Zollclient.jar" perm="a+x" />
+</target>
+
+<target name="jarmagazineclient" depends="movetoonedir"
+    description="Bundles all relevant classes to one magazine client jar file">
+    <jar destfile="${target_jars_dir}/Warenlagerclient.jar"
+    basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+        <manifest>
+            <attribute name="Main-Class" value="salssuite.clients.magazine.MagazineClient" />
+        </manifest>
+        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+    </jar>
+    <chmod file="${target_jars_dir}/Warenlagerclient.jar" perm="a+x" />
+</target>
+
+<target name="jaraccountingclient" depends="movetoonedir"
+    description="Bundles all relevant classes to one accounting client jar file" >
+    <jar destfile="${target_jars_dir}/Buchhaltungsclient.jar"
+    basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+        <manifest>
+            <attribute name="Main-Class" value="salssuite.clients.accounting.AccountingClient" />
+        </manifest>
+        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+    </jar>
+    <chmod file="${target_jars_dir}/Buchhaltungsclient.jar" perm="a+x" />
+</target>
+
+<target name="jaremploymentclient" depends="movetoonedir"
+    description="Bundles all relevant classes to one accounting client jar file" >
+    <jar destfile="${target_jars_dir}/Arbeitsamtclient.jar"
+    basedir="${temporary_classes_dir}" excludes="*.jar, *.war">
+        <manifest>
+            <attribute name="Main-Class" value="salssuite.clients.employment.EmploymentClient" />
+        </manifest>
+        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+    </jar>
+    <chmod file="${target_jars_dir}/Arbeitsamtclient.jar" perm="a+x" />
+</target>
+
+<target name="jaradminclient" depends="movetoonedir"
+    description="Bundles all relevant classes to one admin client jar file" >
+    <jar destfile="${target_jars_dir}/Adminclient.jar"
+    basedir="${temporary_classes_dir}" excludes="*.jar, *.war">
+        <manifest>
+            <attribute name="Main-Class" value="salssuite.clients.admin.AdminClient" />
+        </manifest>
+        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+    </jar>
+    <chmod file="${target_jars_dir}/Adminclient.jar" perm="a+x" />
+</target>
+    
+
+                            <!-- CLEAN TARGETS -->
+
+<!-- Clean -->
+
+<target name="clean" description="Removes temporary files" >
+    <delete dir="${temporary_classes_dir}"/>
+</target>
+
+<!-- Clean all (even the generated files) -->
+
+<target name="cleanall" depends="clean"
+    description="Removes all files generated by any of the targets.">
+    <delete dir="${target_javadoc_dir}" />
+    <delete dir="${target_jars_dir}" />
+</target>
+
+                            <!-- DOC TARGETS -->
+
+<!-- Generate javadoc -->
+
+<target name="javadoc" description="Generates javadoc for the SalSSuite programme">
+    <mkdir dir="${target_javadoc_dir}" />
+    <javadoc sourcepath="${source_sources_dir}" destdir="${target_javadoc_dir}" 
+        Overview="${source_sources_dir}/overview.html">
+        <classpath>
+            <pathelement path="${classpath}" />
+            <pathelement location="${source_derby_dir}" />
+        </classpath>
+        <link href="${source_std_api_javadoc}" />
+    </javadoc>
+</target>
+
+                         <!-- GENERAL TARGETS -->
+
+<!-- Install -->
+
+<target name="install" depends="jar, clean"
+    description="Starts the SalSSuite Installer when all work is done.">
+   <java jar="${target_jars_dir}/Installer.jar" fork="true" />
+</target>
+
+<!-- Do everything -->
+
+<target name="dist" depends="javadoc, jar, clean"
+    description="Generates javadoc and builds the SalSSuite programme (without
+    installing it, though).">
+</target>
+
+                        <!-- MISCELLANEOUS TARGETS -->
+
+<target name="count-lines" depends="" description="Counts the number of   
+    physical lines of code using sloccount." >
+
+    <exec executable="sloccount" searchpath="true" output="tmp.txt" >
+        <arg line="--details ${source_sources_dir}" />
+    </exec>
+    <exec executable="sort" searchpath="true" output="sloc.txt" >
+        <arg line="-n tmp.txt" />
+    </exec>
+    <echo file="sloc.txt" append="true" >
+
+
+        =======================================================
+
+
+    </echo>
+    <exec executable="sloccount" searchpath="true" output="sloc.txt" append="true">
+        <arg line="${source_sources_dir}" />
+    </exec>
+    <delete file="tmp.txt" />
+    <exec executable="gedit" searchpath="true" >
+        <arg line="sloc.txt" />
+    </exec>
+</target>
+
+</project>

@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Overview of the SalSSuite</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+      The SalSSuite is an administration programme geared towards the very
+      special requirements of the organisers of a school project called
+      'Schule als Staat' (or similar projects). It consists of a server
+      which mainly serves as a frontend for a
+      <a href=http://db.apache.org/derby/> Derby</a> database server but also
+      has a basic GUI, and various clients.
+      
+      <h2>Schule als Staat</h2>
+
+      Schule als Staat is a school project which is quite common in the south
+      of Germany, but unfortunately not elsewhere. It transforms a whole school
+      into a fictive state for a limited period of time (usually a few days),
+      giving it its own name, national anthem, currency etc. During the project,
+      teachers and pupils are equally called 'citizens', and they have the same
+      rights and duties. Citizens can be managed with the SalSSuite using
+      the {@link salssuite.server.module.CitizenModule} and its GUI.
+      <p>
+      A political system is established usually before the project begins,
+      mirroring in most cases the German democratic institutions with
+      parliament, government, and head of state.
+      <p>
+      During the project all citizens have to work and gain money. Therefore
+      they can apply for jobs in the state's bureaucracy, or they can create
+      their own small companies. In these firms, they may produce goods (very
+      often food) or offer any kind of service.<br/>
+      In the SalSSuite, companies can be managed using the
+      {@link salssuite.server.module.CompanyModule} and its GUI.
+      <p>
+      Compared to the real German state, there are of course some divergences.
+      The most prominent one is the 'duty' system a school has to establish. The
+      obligation to go to school also while the project is running (and not
+      just stay at home) must be enforced, and therefore there exists a
+      minimum amount of time for which each citizen has to stay inside the state.
+      This is controlled using the so called 'duty' system, which provides simple
+      logging of the citizen's entries and leavings. A duty terminal has to
+      be installed at every entrance point of the school so that everything
+      gets logged.<br/>
+      The SalSSuite addresses this additional difficulty with
+      the {@link salssuite.server.module.DutyModule} and
+      {@link salssuite.clients.duty.DutyClient}.
+      <p>
+      The second major difference to a real state is the so called magazine
+      which essentially does the shopping for all the companies. To be able to
+      do so, it creates a list of all wares which can be made available to the
+      companies before the project starts. During the project, the companies
+      can then order any amount of these wares and pay for them in
+      the state's own currency, and the magazine goes to some local supermarket
+      and buys the wares (for euros).<br/>
+      The SalSSuite provides management tools for each of this tasks with
+      the {@link salssuite.server.module.MagazineModule} and its
+      {@link salssuite.clients.magazine.MagazineClient}.
+      <p>
+      As you might guess, this project is not only very complex for a school,
+      but also demands a lot of financial resources that ought to be managed
+      well. This can be done using the {@link salssuite.server.module.AccountingModule}
+      and its associated {@link salssuite.clients.accounting.AccountingClient}.
+
+      <h2>The Server Framework</h2>
+
+      This section merely gives a broad overview of the general server concept.
+      For details, please refer to the {@link salssuite.server.Server}'s
+      documentation.
+      <p>
+      As was already mentioned, the server primarily
+      is a frontend to a Derby database server. When the server starts, it sets
+      up such a server, and clients as well as the server itself can connect to
+      it and query/modify the database. The server is identifiable, as usual,
+      by an IP address (usually in the local network only) and the port
+      on which it is listening.
+      <p>
+      To provide greater flexibility and to give the code a clear structure,
+      the server has a modular layout. Modules are defined by the
+      {@link salssuite.server.module.Module} interface and can easily be added
+      to the server by inserting them at a few points in the code (marked with
+      'FIXME'comments). Usually one module will be responsible for a more or less
+      distinct aspect of the project such as the duty system or the magazine.
+      <p>
+      Modules can fulfil several tasks, but the most important ones are making
+      additions to the database (that is, creating new tables which can be used
+      by the module and/or a client) and providing a GUI for the user.
+      <p>
+      GUIs can be presented in two ways: (a) as module panels, and (b) as clients.
+      What option to choose depends on the kind of information that is to be
+      made available. Module panels are displayed locally on that computer on which
+      the server is running. Physical access to them is therefore restricted and
+      not very convenient, because one has to run to that computer every time
+      one wants to do something with the data. Module panels should therefore
+      be used (1) for security-relevant data which only users with special rights
+      should have access to, and (2) data which commonly needs not be modified
+      during the project, such as the basic citizen data.<br/>
+      The server also has an option to run in command line mode, i.e. without
+      a GUI. For that reason, all module panels that are normally displayed by
+      the server can also be displayed by the so-called
+      {@link salssuite.clients.admin.AdminClient}. You should keep this in mind
+      when designing new modules.
+      <p>
+      Clients, in turn, should be used in any other case, that is when the data
+      is not especially relevant and when it should be available on any computer
+      in the local network (and potentially on many of them at the same time).
+      <p>
+      The server features a user account system with which the server
+      administrator can give certain organisers a username and password, along
+      with permissions to access certain modules and their clients.
+      <p>
+      The <code>Server</code> is launched by the so-called
+      {@link salssuite.server.ServerLauncher} which provides a wrapper for
+      extended data security in case of a server crash.
+
+      <h2>Extending the SalSSuite</h2>
+
+      Writing new modules for the SalSSuite is rather easy. A module can
+      define everything that is necessary on its own (database tables,
+      GUIs) and clients can be programmed on top of the new features introduced
+      by the module. It must simply implement all methods of the
+      {@link salssuite.server.module.Module} interface.<br/>
+      You should note, however, that the server itself creates some database
+      tables which are probably useful for most modules, see
+      {@link salssuite.server.Server#buildServerDatabase} for details. Also
+      take care that your additions to the database do not conflict with
+      those of existing modules or the server. For that purpose, refer
+      to the <code>buildDatabase</code> method of each module; it contains
+      a complete specification of all tables this module creates.
+      <p>
+      When creating new modules, don't forget that the wheel needs not be
+      reinvented yet another time. Some generic classes have been programmed
+      for the SalSSuite before, and they can be found in the packages
+      <code>salssuite.util</code>, <code>salssuite.util.gui</code>, and
+      <code>salssuite.clients</code>
+  </body>
+</html>

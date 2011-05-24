@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Package documentation of salssuite.server.gui</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    Basic server GUI. The classes in this package provide the GUI of a server
+    without any modules. The term 'module' is explained in the documentation of the
+    {@link salssuite.server.module.Module} interface and the
+    <code>salssuite.server.module</code> package.
+    <p>
+    The {@link salssuite.server.gui.ServerGUI} is the central
+    <code>JFrame</code> representing a server.
+    It is mainly a wrapper for the <code>ServerPanel</code> and all the module
+    panels.
+    <p>
+    Using the {@link salssuite.server.gui.ServerPanel}, the user can do basic
+    server administration such as generating output, saving the server's data,
+    or managing user accounts. The latter is done through the
+    {@link salssuite.server.gui.AccountManagingGUI} which provides
+    an interface to the user account system. This GUI may be 'launched' from
+    the <code>ServerPanel</code> and is not intended as a standalone component.
+    <p>
+    The dialogs in this package are merely helper dialogs for the various
+    other GUI classes.
+    <p>
+    For details on the account management system, please refer to the
+    <code>Server</code>'s documentation.
+  </body>
+</html>
