@@ -155,6 +155,10 @@ public class EmploymentClient extends javax.swing.JFrame {
         unemployedFilterInput = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
         unemployedFilterFeedbackDisplay = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        totalUnemployedDisplay = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        totalFreeJobsDisplay = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SalSSuite - Arbeitsamt");
@@ -189,7 +193,7 @@ public class EmploymentClient extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(companyTable);
 
-        displayOnlyWithFreeJobsToggle.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        displayOnlyWithFreeJobsToggle.setFont(new java.awt.Font("Dialog", 0, 12));
         displayOnlyWithFreeJobsToggle.setText("Zeige nur Firmen mit freien Stellen");
         displayOnlyWithFreeJobsToggle.setToolTipText("Wenn das Kästchen ausgewählt ist, werden in der Tabelle nur Firmen angezeigt, die mindestens eine freie Stelle haben.");
         displayOnlyWithFreeJobsToggle.addItemListener(new java.awt.event.ItemListener() {
@@ -258,14 +262,14 @@ public class EmploymentClient extends javax.swing.JFrame {
         jLabel5.setText("Name:");
         jLabel5.setToolTipText("Der Firmenname.");
 
-        companyNameDisplay.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        companyNameDisplay.setFont(new java.awt.Font("Dialog", 0, 12));
         companyNameDisplay.setText("-");
         companyNameDisplay.setToolTipText("Der Firmenname.");
 
         jLabel6.setText("Leiter:");
         jLabel6.setToolTipText("Der Gründer oder Verantwortliche der Firma.");
 
-        companyFounderDisplay.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        companyFounderDisplay.setFont(new java.awt.Font("Dialog", 0, 12));
         companyFounderDisplay.setText("-");
         companyFounderDisplay.setToolTipText("Der Gründer und Verantwortliche der Firma.");
 
@@ -282,7 +286,7 @@ public class EmploymentClient extends javax.swing.JFrame {
         jLabel3.setText("Beschr.:");
         jLabel3.setToolTipText("Eine Beschreibung des Tätigkeitsfeldes der Firma.");
 
-        companyDescriptionDisplay.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        companyDescriptionDisplay.setFont(new java.awt.Font("Dialog", 0, 12));
         companyDescriptionDisplay.setText("-");
         companyDescriptionDisplay.setToolTipText("Eine Beschreibung des Tätigkeitsfeldes der Firma.");
 
@@ -294,7 +298,7 @@ public class EmploymentClient extends javax.swing.JFrame {
             }
         });
 
-        companyOccupiedJobsDisplay.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        companyOccupiedJobsDisplay.setFont(new java.awt.Font("Dialog", 0, 12));
         companyOccupiedJobsDisplay.setText("-");
         companyOccupiedJobsDisplay.setToolTipText("Anzahl der Angestellten dieser Firma.");
 
@@ -387,7 +391,7 @@ public class EmploymentClient extends javax.swing.JFrame {
                 .addGap(9, 9, 9)
                 .addComponent(jLabel14)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -415,22 +419,34 @@ public class EmploymentClient extends javax.swing.JFrame {
         unemployedFilterFeedbackDisplay.setForeground(new java.awt.Color(255, 0, 0));
         unemployedFilterFeedbackDisplay.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 
+        jLabel13.setText("Arbeitslose ges.:");
+
+        jLabel16.setText("Freie Stellen ges.:");
+
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
         rightPanelLayout.setHorizontalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(rightPanelLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
                         .addComponent(unemployedFilterFeedbackDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel12)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(unemployedFilterInput, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(unemployedFilterInput, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel13)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(totalUnemployedDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel16)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(totalFreeJobsDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         rightPanelLayout.setVerticalGroup(
@@ -444,7 +460,14 @@ public class EmploymentClient extends javax.swing.JFrame {
                         .addComponent(jLabel12))
                     .addComponent(unemployedFilterFeedbackDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel13)
+                        .addComponent(totalUnemployedDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel16)
+                    .addComponent(totalFreeJobsDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -599,7 +622,9 @@ public class EmploymentClient extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -616,6 +641,8 @@ public class EmploymentClient extends javax.swing.JFrame {
     private javax.swing.JButton refreshButton;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JPanel topLeftPanel;
+    private javax.swing.JLabel totalFreeJobsDisplay;
+    private javax.swing.JLabel totalUnemployedDisplay;
     private javax.swing.JLabel unemployedFilterFeedbackDisplay;
     private javax.swing.JTextField unemployedFilterInput;
     private javax.swing.JList unemployedList;
@@ -662,6 +689,8 @@ public class EmploymentClient extends javax.swing.JFrame {
                 return false;
             }
         };
+
+        int totalFreeJobsCount = 0;
         
         try {
 
@@ -679,11 +708,15 @@ public class EmploymentClient extends javax.swing.JFrame {
 
                 int ID = companyData.getInt("id");
                 String name = companyData.getString("name");
+                int freeJobs = getFreeJobsCount(ID);
 
                 //build the row
                 newModel.addRow(new String[]{
-                   ""+ID, name, ""+getFreeJobsCount(ID)
+                   ""+ID, name, ""+freeJobs
                 });
+
+                //update the total number of free jobs
+                totalFreeJobsCount += freeJobs;
             }
         }
         catch(Exception e) {
@@ -695,6 +728,7 @@ public class EmploymentClient extends javax.swing.JFrame {
 
         companyTable.setModel(newModel);
         companyTableModel = newModel;
+        totalFreeJobsDisplay.setText(""+totalFreeJobsCount);
     }
 
     /**
@@ -797,14 +831,18 @@ public class EmploymentClient extends javax.swing.JFrame {
         unemployedListModel = new DefaultListModel();
         unemployedList.setModel(unemployedListModel);
 
+        int totalUnemployedCount = 0;
+
         try {
             ResultSet unemployed = stmt.executeQuery("SELECT id, forename, surname"
                     + " FROM citizens WHERE companyId < 0");
-            while(unemployed.next())
+            while(unemployed.next()) {
                 unemployedListModel.addElement(
                         unemployed.getInt("ID") + " " +
                         unemployed.getString("forename") + " "+
                         unemployed.getString("surname"));
+                totalUnemployedCount ++;
+            }
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
@@ -812,6 +850,8 @@ public class EmploymentClient extends javax.swing.JFrame {
             e.printStackTrace();
             return;
         }
+
+        totalUnemployedDisplay.setText(""+totalUnemployedCount);
     }
 
     /**
