@@ -10,11 +10,16 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import salssuite.util.gui.ExceptionDisplayDialog;
 import salssuite.util.gui.FilterPanel;
@@ -105,6 +110,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         addCompanyButton = new javax.swing.JButton();
         editCompanyButton = new javax.swing.JButton();
         deleteCompanyButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
 
@@ -139,6 +145,13 @@ public class CompanyModulePanel extends javax.swing.JPanel{
             }
         });
 
+        jButton1.setText("Liste erstellen");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateCompanyList(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -152,7 +165,9 @@ public class CompanyModulePanel extends javax.swing.JPanel{
                 .addComponent(editCompanyButton)
                 .addGap(18, 18, 18)
                 .addComponent(deleteCompanyButton)
-                .addGap(357, 357, 357))
+                .addGap(182, 182, 182)
+                .addComponent(jButton1)
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -162,7 +177,8 @@ public class CompanyModulePanel extends javax.swing.JPanel{
                     .addComponent(addCompanyButton)
                     .addComponent(jLabel1)
                     .addComponent(editCompanyButton)
-                    .addComponent(deleteCompanyButton))
+                    .addComponent(deleteCompanyButton)
+                    .addComponent(jButton1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -187,9 +203,9 @@ public class CompanyModulePanel extends javax.swing.JPanel{
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
-                    .addComponent(filterDummyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 769, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(filterDummyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 769, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -200,7 +216,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
                 .addGap(18, 18, 18)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(filterDummyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE)
+                .addComponent(filterDummyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
                 .addGap(15, 15, 15))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -255,12 +271,112 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         filterPanel.clearFilters();
     }//GEN-LAST:event_deleteCompany
 
+    private void generateCompanyList(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateCompanyList
+
+        //ask the user for a file to store the data
+        File destFile;
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Csv-Dateien",
+                "csv"));
+        fileChooser.setDialogTitle("Betriebsliste speichern");
+        int option = fileChooser.showSaveDialog(getTopLevelAncestor());
+        if(option != JFileChooser.APPROVE_OPTION)
+            return;
+        destFile = fileChooser.getSelectedFile();
+
+        //open the file and print the header
+        PrintWriter out;
+        try {
+            out = new PrintWriter(new java.io.FileWriter(destFile));
+            out.println("\"Nummer\",\"Name\",\"Raum\",\"Stellen ges. (inkl. Gründer)\","
+                    + "\"Gründer\",\"Angestellte\"");
+            out.flush();
+        }
+        catch(IOException e) {
+            JOptionPane.showMessageDialog(getTopLevelAncestor(), "Konnte gewählte"
+                    + "Datei nicht öffnen", "Dateifehler", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        //generate the list
+        try {
+            Statement stmt2 = dbcon.createStatement();
+            ResultSet companies = stmt.executeQuery("SELECT id,name,"
+                    + "room,jobs FROM companies");
+
+            while(companies.next()) {
+                String row = "";
+
+                int ID = companies.getInt("id");
+
+                //generate the new row
+                row += ID + ",";
+                row += "\"" + companies.getString("name").replace("\"", "'") + "\",";
+                row += "\"" + companies.getString("room").replace("\"", "'") + "\",";
+                row += companies.getInt("jobs") + ",";
+
+                //get the founder
+                ResultSet founder = stmt2.executeQuery("SELECT forename,surname"
+                        + " FROM citizens WHERE companyId = "+ID+" AND"
+                        + " isBoss = 1");
+                if(founder.next()) {
+                    String forename = founder.getString("forename").replace("\"", "'").
+                            split(" ")[0];
+                    String surname = founder.getString("surname").replace("\"", "'");
+                    row += "\"" + forename + " " + surname + "\",";
+                }
+                else
+                    row += ",";
+
+                //get the employees
+                ResultSet employees = stmt2.executeQuery("SELECT forename, surname"
+                        + " FROM citizens WHERE companyId = "+ID+" AND"
+                        + " isBoss = 0");
+                boolean firstEmployee = true;
+                while(employees.next()) {
+                    String forename = employees.getString("forename").replace("\"", "'").
+                            split(" ")[0];
+                    String surname = employees.getString("surname").replace("\"", "'");
+                    if(firstEmployee) {
+                        row += "\"" + forename + " " + surname + "\"";
+                        out.println(row);
+                        firstEmployee = false;
+                    }
+                    else {
+                        out.println(",,,,,\"" + forename + " " + surname + "\"");
+                    }
+                }
+
+                //if the company has no employees nothing
+                //has been printed yet
+                if(firstEmployee) {
+                    out.println(row);
+                }
+            }
+
+            out.flush();
+            
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+
+        //confirm generation
+        JOptionPane.showMessageDialog(this, "Betriebsliste gespeichert.",
+                "Erfolg", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_generateCompanyList
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addCompanyButton;
     private javax.swing.JButton deleteCompanyButton;
     private javax.swing.JButton editCompanyButton;
     private javax.swing.JPanel filterDummyPanel;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
