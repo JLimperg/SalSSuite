@@ -90,7 +90,7 @@ public class DutyClient extends javax.swing.JFrame {
             }
         }//end while
 
-        //display NameToIDClient (probably useful for duty officeers)
+        //display NameToIDClient (probably useful for duty officers)
         NameToIDClient.displayNameToIDClient(this, theserver[0], Integer.parseInt(
                 theserver[1]), theserver[2], theserver[3]);
         jTextField1.requestFocus();
@@ -246,9 +246,17 @@ public class DutyClient extends javax.swing.JFrame {
      * state (that is, whether they are currently logged in or out).
      * @param ID The citizen to be logged in/out.
      */
-    private void logInOut(int ID){
-        //determine whether citi is currently logged in or out
+    private void logInOut(int ID){       
         try {
+            //check if citi exists
+            ResultSet citi = stmt.executeQuery("SELECT id FROM citizens WHERE"
+                    + " id = "+ID);
+            if(!citi.next()) {
+                displayError("Bürger Nr. "+ID+" existiert nicht.");
+                return;
+            }
+
+            //determine whether citi is currently logged in or out
             ResultSet logs = stmt.executeQuery("SELECT type FROM logs WHERE" +
                     " citizenId = "+ID);
             
