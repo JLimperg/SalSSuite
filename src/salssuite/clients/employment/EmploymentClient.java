@@ -54,8 +54,8 @@ public class EmploymentClient extends javax.swing.JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent evt) {
-                Constants.dutyClientNode.putInt("window.x", getX());
-                Constants.dutyClientNode.putInt("window.y", getY());
+                Constants.employmentClientNode.putInt("window.x", getX());
+                Constants.employmentClientNode.putInt("window.y", getY());
                 System.exit(0);
             }
         });
