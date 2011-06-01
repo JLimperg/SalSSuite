@@ -81,16 +81,18 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
             if(!boss.next()) {
                 JOptionPane.showMessageDialog(parent, "Chef der Firma nicht gefunden."
                         , "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
-                dispose();
-                return;
+                founderIDInput.setText("-1");
+                founderSalaryInput.setText("0");
+            }
+            else {
+                founderIDInput.setText(""+boss.getInt("id"));
+                founderNameDisplay.setText("("+boss.getString("forename")+" "+
+                        boss.getString("surname")+")");
+                founderSalaryInput.setText(""+boss.getDouble("salary"));
             }
 
             IDInput.setText(""+company.getInt("id"));
             jobsInput.setText(""+company.getInt("jobs"));
-            founderIDInput.setText(""+boss.getInt("id"));
-            founderNameDisplay.setText("("+boss.getString("forename")+" "+
-                    boss.getString("surname")+")");
-            founderSalaryInput.setText(""+boss.getDouble("salary"));
             nameInput.setText(company.getString("name"));
             roomInput.setText(company.getString("room"));
             productDescriptionInput.setText(company.getString("productDescription"));
