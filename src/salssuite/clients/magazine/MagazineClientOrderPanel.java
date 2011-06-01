@@ -236,7 +236,7 @@ public class MagazineClientOrderPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 655, Short.MAX_VALUE)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 646, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
@@ -269,7 +269,7 @@ public class MagazineClientOrderPanel extends javax.swing.JPanel {
                         .addComponent(minuteInput, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(1, 1, 1)
                         .addComponent(jLabel10)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 35, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(isOrderPaidCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(isOrderProcessedCheckbox)))
@@ -289,12 +289,12 @@ public class MagazineClientOrderPanel extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(removeWareButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 212, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 107, Short.MAX_VALUE)
                                 .addComponent(jButton1))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel6)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(totalValueDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)))))
+                                .addComponent(totalValueDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
 
@@ -496,7 +496,10 @@ public class MagazineClientOrderPanel extends javax.swing.JPanel {
         }
 
         //remove this panel
-        getParent().remove(this);
+        java.awt.Container parent = getParent();
+        parent.remove(this);
+        parent.validate();
+        parent.repaint();
     }//GEN-LAST:event_removeOrder
 
     private void toggleProcessed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleProcessed

@@ -109,16 +109,14 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup2 = new javax.swing.ButtonGroup();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        mainPanel = new javax.swing.JPanel();
         newOrderButton = new javax.swing.JButton();
         refreshButton = new javax.swing.JButton();
         filterDummyPanel = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        mainPanel = new javax.swing.JPanel();
+        onlyNotpaidFilter = new javax.swing.JCheckBox();
 
         setPreferredSize(new java.awt.Dimension(730, 430));
-
-        mainPanel.setLayout(new java.awt.GridLayout(0, 1));
-        jScrollPane1.setViewportView(mainPanel);
 
         newOrderButton.setText("Neue Bestellung");
         newOrderButton.addActionListener(new java.awt.event.ActionListener() {
@@ -140,31 +138,47 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
         filterDummyPanel.setLayout(filterDummyPanelLayout);
         filterDummyPanelLayout.setHorizontalGroup(
             filterDummyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 730, Short.MAX_VALUE)
+            .addGap(0, 808, Short.MAX_VALUE)
         );
         filterDummyPanelLayout.setVerticalGroup(
             filterDummyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 131, Short.MAX_VALUE)
+            .addGap(0, 106, Short.MAX_VALUE)
         );
+
+        mainPanel.setLayout(new java.awt.GridLayout(0, 1));
+        jScrollPane1.setViewportView(mainPanel);
+
+        onlyNotpaidFilter.setText("zeige nur nicht Bezahlte");
+        onlyNotpaidFilter.setToolTipText("Wenn aktiviert werden nur nicht bezahlte Bestellungen angezeigt.");
+        onlyNotpaidFilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateOrders(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(filterDummyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(refreshButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 474, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 505, Short.MAX_VALUE)
                 .addComponent(newOrderButton)
                 .addContainerGap())
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 730, Short.MAX_VALUE)
+            .addComponent(filterDummyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(602, Short.MAX_VALUE)
+                .addComponent(onlyNotpaidFilter)
+                .addContainerGap())
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 808, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
+                .addComponent(onlyNotpaidFilter)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(filterDummyPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -243,6 +257,7 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JButton newOrderButton;
+    private javax.swing.JCheckBox onlyNotpaidFilter;
     private javax.swing.JButton refreshButton;
     // End of variables declaration//GEN-END:variables
 
@@ -293,9 +308,14 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
                 int companyID;
 
                 ResultSet order;
-                order = stmt.executeQuery("SELECT (companyId) FROM orders" +
+                order = stmt.executeQuery("SELECT companyId, paid FROM orders" +
                         " WHERE id = "+orderID);
                 order.next();
+
+                //if the user wants to see only those orders that are not paid yet:
+                if(onlyNotpaidFilter.isSelected() && order.getInt("paid") == 1)
+                    continue;
+
                 companyID = order.getInt("companyId");
 
                 MagazineClientOrderPanel panel = new MagazineClientOrderPanel(client,
