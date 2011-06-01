@@ -42,9 +42,6 @@ public class DutyModulePanel extends javax.swing.JPanel {
      */
     public DutyModulePanel(Connection dbcon) {
         this.dbcon = dbcon;
-        //DEBUG
-        if(this.dbcon == null)
-            System.out.println("DBCON NULL");
         initComponents();
 
         try {
