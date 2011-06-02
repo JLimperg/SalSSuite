@@ -95,15 +95,13 @@ public class CitizenModulePanel extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
-        jPanel1 = new javax.swing.JPanel();
-        refreshButton = new javax.swing.JButton();
         deleteCitizenButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
         filterPanelPlaceholder = new javax.swing.JPanel();
         addCitizenButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        refreshButton = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(750, 500));
-        setLayout(new java.awt.BorderLayout());
 
         table.setAutoCreateRowSorter(true);
         table.setModel(new javax.swing.table.DefaultTableModel(
@@ -115,18 +113,8 @@ public class CitizenModulePanel extends javax.swing.JPanel {
             }
         ));
         table.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        table.setRowSelectionAllowed(false);
-        table.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        table.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         jScrollPane1.setViewportView(table);
-
-        add(jScrollPane1, java.awt.BorderLayout.CENTER);
-
-        refreshButton.setText("Aktualisieren");
-        refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButtonPressed(evt);
-            }
-        });
 
         deleteCitizenButton.setText("Bürger löschen");
         deleteCitizenButton.addActionListener(new java.awt.event.ActionListener() {
@@ -134,6 +122,8 @@ public class CitizenModulePanel extends javax.swing.JPanel {
                 deleteCitizen(evt);
             }
         });
+
+        jLabel1.setText("Zum Bearbeiten eines Wertes auf eine Zelle doppelklicken, Wert eingeben und <Enter> drücken");
 
         filterPanelPlaceholder.setLayout(new java.awt.BorderLayout());
 
@@ -144,43 +134,47 @@ public class CitizenModulePanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setText("Zum Bearbeiten eines Wertes auf eine Zelle doppelklicken, Wert eingeben und <Enter> drücken");
+        refreshButton.setText("Aktualisieren");
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonPressed(evt);
+            }
+        });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(filterPanelPlaceholder, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 744, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addContainerGap(68, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(addCitizenButton)
                         .addGap(18, 18, 18)
                         .addComponent(deleteCitizenButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 348, Short.MAX_VALUE)
-                        .addComponent(refreshButton)
-                        .addContainerGap())))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(filterPanelPlaceholder, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-                .addGap(42, 42, 42)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(refreshButton)
-                    .addComponent(addCitizenButton)
-                    .addComponent(deleteCitizenButton))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 362, Short.MAX_VALUE)
+                        .addComponent(refreshButton))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 744, Short.MAX_VALUE)
+                    .addComponent(jLabel1))
                 .addContainerGap())
         );
-
-        add(jPanel1, java.awt.BorderLayout.PAGE_END);
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(filterPanelPlaceholder, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(addCitizenButton)
+                    .addComponent(deleteCitizenButton)
+                    .addComponent(refreshButton))
+                .addGap(12, 12, 12))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void refreshButtonPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonPressed
@@ -204,18 +198,21 @@ public class CitizenModulePanel extends javax.swing.JPanel {
         refreshButtonPressed(null);
 
         //scroll down to created citizen
-        jScrollPane1.getVerticalScrollBar().setValue(
-                jScrollPane1.getVerticalScrollBar().getMaximum());
+        table.changeSelection(table.getRowCount()-1, 0, false, false);
     }//GEN-LAST:event_addCitizen
 
     private void deleteCitizen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteCitizen
-        //get ID
-        int deleteRow = table.getSelectedRow();
-        int ID = Integer.parseInt((String)tableModel.getValueAt(deleteRow, 0));
+        //get IDs
+        int[] deleteRows = table.getSelectedRows();
+        int[] IDs = new int[deleteRows.length];
+        
+        for(int ct = 0; ct < deleteRows.length; ct++)
+        IDs[ct] = Integer.parseInt((String)tableModel.getValueAt(deleteRows[ct], 0));
 
         //remove from database
         try {
-            stmt.executeUpdate("DELETE FROM citizens WHERE id = "+ID);
+            for(int ID : IDs    )
+                stmt.executeUpdate("DELETE FROM citizens WHERE id = "+ID);
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
@@ -224,8 +221,8 @@ public class CitizenModulePanel extends javax.swing.JPanel {
             return;
         }
 
-        //update visual representation
-        refreshButtonPressed(null);
+        for(int ct = 0; ct < deleteRows.length; ct++)
+            tableModel.removeRow(deleteRows[ct]-ct);
     }//GEN-LAST:event_deleteCitizen
 
 
@@ -234,7 +231,6 @@ public class CitizenModulePanel extends javax.swing.JPanel {
     private javax.swing.JButton deleteCitizenButton;
     private javax.swing.JPanel filterPanelPlaceholder;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton refreshButton;
     private javax.swing.JTable table;
@@ -285,6 +281,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
                 cellUpdated(evt.getFirstRow(), evt.getColumn());
             }
         });
+
         table.setModel(tableModel);
 
         //fill the model
