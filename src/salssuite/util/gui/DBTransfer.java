@@ -1,5 +1,5 @@
 /*
- * AccountingDBMerger.java
+ * DBTransfer.java
  *
  * Created on 15.12.2010, 22:31:27
  */
@@ -10,8 +10,9 @@ import java.io.File;
 import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.LinkedList;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -19,33 +20,46 @@ import org.apache.derby.drda.NetworkServerControl;
 import salssuite.util.Util;
 
 /**
- * Standalone programme that lets the user merge two accounting tables. More precisely,
- * all values from the 'accounting' and 'accounting_categories' tables of the
- * source database are inserted into the 'accounting' and 'accounting_categories'
- * tables of the target database. Note that it is assumed
- * that all tables into which data should be copied are already present and
- * that all belong to the "DBUSER" schema. This should be the case if the
- * database was created by the <code>Server</code> for a standard project.
+ * Standalone programme that lets the user transfer data from one SalSSuite
+ * database to another. Using the command line options, the user can specify
+ * which database tables should be transfered and if the target database's
+ * data should be replaced or kept.
  * <p>
- * The merger programme uses builtin export and import functions of the
- * Derby network server. It therefore requires some disk space, but its amount
- * should usually not be critical.
+ * The transfer client is useful when an update has introduced a new database table.
+ * In that case, data from an 'old version' database can be transfered to
+ * an empty 'new version' database so that no data has to be recreated manually.
+ * In that case, run the client with cmd option "-r", specify all the tables that
+ * should be transfered and select the 'old version' database as source
+ * and the 'new version' database as target.
  * <p>
  * This programme is not part of the standard server-client-programmes but
  * rather a utility tool.
  * @author Jannis Limperg
  * @see salssuite.server.module.AccountingModule#buildDatabase
+ * @see #main
  */
-public class AccountingDBMerger extends javax.swing.JFrame {
+public class DBTransfer extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 1;
 
     /**
      * Sole constructor.
+     * @param tablesToBeTransfered Indices of those tables which are to be transfered.
+     * Each index is assumed to correspond to an array index of the
+     * {@link #TABLES} list.
+     * @param replace Indicates that the data of the target database should
+     * be replaced rather than appended to. This corresponds to the
+     * <code>REPLACE</code> parameter of the
+     * <code>SYSCS_UTIL.SYSCS_IMPORT_DATA</code> Derby system procedure.
+     * See the <a href="http://db.apache.org/derby/docs/10.6/ref/">Derby
+     * reference</a> for details.
+     *
      */
-    public AccountingDBMerger() {
+    public DBTransfer(Integer[] tablesToBeTransfered, boolean replace) {
         initComponents();
         setLocation(200, 200);
+        this.tablesToBeTransfered = tablesToBeTransfered;
+        this.replace = replace;
     }
 
     /** This method is called from within the constructor to
@@ -69,10 +83,10 @@ public class AccountingDBMerger extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SalSSuite - Finanzdatenbanken zusammenführen");
 
-        jLabel1.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Ubuntu", 1, 18));
         jLabel1.setText("Quelldatenbank");
 
-        jLabel2.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Ubuntu", 1, 18));
         jLabel2.setText("Zieldatenbank");
 
         sourceDBLabel.setText("Bitte Ordner wählen");
@@ -92,7 +106,7 @@ public class AccountingDBMerger extends javax.swing.JFrame {
         choseTargetPathButton.setToolTipText("Den Zieldatenbank-Ordner wählen.");
         choseTargetPathButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chooserTargetDBPath(evt);
+                chooseTargetDBPath(evt);
             }
         });
 
@@ -170,14 +184,14 @@ public class AccountingDBMerger extends javax.swing.JFrame {
                 40));
     }//GEN-LAST:event_chooseSourceDBPath
 
-    private void chooserTargetDBPath(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooserTargetDBPath
+    private void chooseTargetDBPath(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseTargetDBPath
         File path = showFileChooser("Zieldatenbank wählen");
         if(path == null)
             return;
         targetFolder = path;
         targetDBLabel.setText(Util.adjustStringLength(path.getAbsolutePath(),
                 40));
-    }//GEN-LAST:event_chooserTargetDBPath
+    }//GEN-LAST:event_chooseTargetDBPath
 
     //Note that the builtin derby functions seem to be case-sensitive about
     //everything, so give all paramteters in capital letters when using these
@@ -194,22 +208,18 @@ public class AccountingDBMerger extends javax.swing.JFrame {
         //---------------------------SOURCE-----------------------------------\\
 
 
-        //in these two files we will store the temporary data of the accounting
-        //and accounting_categories tables respectively
-        File accountingExportFile;
-        File accountingCategoriesExportFile;
+        //set up the temporary files to store the data in
+        File[] tempFiles = new File[tablesToBeTransfered.length];
 
         try {
-            accountingExportFile = File.createTempFile("Accounting-DB", ".csv");
-            accountingCategoriesExportFile = File.createTempFile(
-                        "AccountingCategories-DB", ".csv");
-            accountingExportFile.deleteOnExit();
-            accountingCategoriesExportFile.deleteOnExit();
-            
-            //Deletion is necessary because the derby routine used for export
-            //won't export to existing files. We just need the pathes.
-            accountingExportFile.delete();
-            accountingCategoriesExportFile.delete();
+            for(int ct = 0; ct < tempFiles.length; ct++) {
+                tempFiles[ct] = File.createTempFile(TABLES[tablesToBeTransfered[ct]], ".csv");
+                tempFiles[ct].deleteOnExit();
+
+                //Deletion is necessary because the derby routine used for export
+                //won't export to existing files. We just need the pathes.
+                tempFiles[ct].delete();
+            }
         }
         catch(java.io.IOException e) {
             JOptionPane.showMessageDialog(this, "<html>Konnte temporäre Dateien für"
@@ -232,18 +242,17 @@ public class AccountingDBMerger extends javax.swing.JFrame {
             Connection dbcon = DriverManager.getConnection("jdbc:derby://localhost:" +
                     PORT +
                     "/"+sourceFolder.getName()+";");
-            Statement stmt = dbcon.createStatement();
 
             //export the data
-            stmt.executeUpdate("CALL SYSCS_UTIL.SYSCS_EXPORT_TABLE "+
-                "('DBUSER','ACCOUNTING','"+
-                accountingExportFile.getAbsolutePath()+
-                "',null,null,null)");
+            PreparedStatement pstmt = dbcon.prepareStatement(
+                    "CALL SYSCS_UTIL.SYSCS_EXPORT_TABLE("
+                    + "'DBUSER',?,?,null,null,null)");
 
-            stmt.executeUpdate("CALL SYSCS_UTIL.SYSCS_EXPORT_TABLE "+
-                "('DBUSER','ACCOUNTING_CATEGORIES','"+
-                accountingCategoriesExportFile.getAbsolutePath()+
-                "',null,null,null)");
+            for(int ct = 0; ct < tablesToBeTransfered.length; ct++) {
+                pstmt.setString(1, TABLES[tablesToBeTransfered[ct]]);
+                pstmt.setString(2, tempFiles[ct].getAbsolutePath());
+                pstmt.executeUpdate();
+            }
 
             //shutdown source db server
             try {
@@ -280,19 +289,25 @@ public class AccountingDBMerger extends javax.swing.JFrame {
             Connection dbcon = DriverManager.getConnection("jdbc:derby://localhost:" +
                     PORT +
                     "/"+targetFolder.getName()+";");
-            Statement stmt = dbcon.createStatement();
 
             //import the data from the export files
-            stmt.executeUpdate("CALL SYSCS_UTIL.SYSCS_IMPORT_DATA"+
-                "('DBUSER','ACCOUNTING','DESCRIPTION,DATE,TIME,INCOME,"
-                + "OUTGO,CATEGORY','2,3,4,5,6,7','"+
-                accountingExportFile.getAbsolutePath()+
-                "',null,null,null,0)");
+            PreparedStatement pstmt = dbcon.prepareStatement(
+                    "CALL SYSCS_UTIL.SYSCS_IMPORT_DATA('DBUSER',?,"
+                    + "?,?,?,null,null,null,?)");
 
-            stmt.executeUpdate("CALL SYSCS_UTIL.SYSCS_IMPORT_DATA"+
-                "('DBUSER','ACCOUNTING_CATEGORIES',null,null,'"+
-                accountingCategoriesExportFile.getAbsolutePath()+
-                "',null,null,null,0)");
+            for(int ct = 0; ct < tablesToBeTransfered.length; ct ++) {
+                pstmt.setString(1, TABLES[tablesToBeTransfered[ct]]);
+                pstmt.setString(2, COLUMNS[tablesToBeTransfered[ct]]);
+                pstmt.setString(3, INSERTPOSITIONS[tablesToBeTransfered[ct]]);
+                pstmt.setString(4, tempFiles[ct].getAbsolutePath());
+                pstmt.setString(5, TABLES[tablesToBeTransfered[ct]]);
+                if(replace)
+                    pstmt.setInt(5, 1);
+                else
+                    pstmt.setInt(5, 0);
+
+                pstmt.executeUpdate();
+            }
 
             //shutdown derby server
             try {
@@ -321,19 +336,47 @@ public class AccountingDBMerger extends javax.swing.JFrame {
     }//GEN-LAST:event_merge
 
     /**
-     * Creates an <code>AccountingDBMerger</code> and displays it.
-     * @param args Command line arguments are not supported.
+     * Creates a <code>DBTransfer</code> and displays it.
+     * @param args Each argument represents a table to be transfered. Only the
+     * table names without the schema name are required. If no arguments are
+     * present, all tables will be transfered.
+     * <p>
+     * By adding "-r" to the command line, the user indicates that the target
+     * database's data should be replaced with that from the source database
+     * rather than inserting the source data into the target database.
      */
     public static void main(String args[]) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ex) {}
 
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new AccountingDBMerger().setVisible(true);
+        //parse cmd arguments
+        LinkedList<Integer> tablesToBeTransfered = new LinkedList<Integer>();
+        boolean replace = false;
+
+        if(args.length == 0) //merge all tables
+            for(int ct = 0; ct < TABLES.length; ct++)
+                tablesToBeTransfered.add(ct);
+        else {
+            forargs: for(String arg : args) {
+                if(arg.equals("-r"))
+                    replace = true;
+                else {
+                    for(int ct = 0; ct < TABLES.length; ct++) {
+                        if(arg.toUpperCase().equals(TABLES[ct])) {
+                            tablesToBeTransfered.add(ct);
+                            continue forargs;
+                        }
+                    }
+                    System.out.println("Table '"+arg+"' is unknown.");
+                    return;
+                }
             }
-        });
+        }
+
+        //create and display the transfer client
+        new DBTransfer(tablesToBeTransfered.toArray(new Integer[0]),
+                replace).setVisible(true);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -359,17 +402,83 @@ public class AccountingDBMerger extends javax.swing.JFrame {
      */
     public static final int PORT = 46789;
 
+    /**
+     * List of all database tables that can be transfered.
+     * @see #COLUMNS
+     * @see #INSERTPOSITIONS
+     */
+    public static final String[] TABLES = {
+        "ORDERS", "REALPURCHASES", "CITIZENS", "ACCOUNTING", "COMPANIES",
+        "ACCOUNTING_CATEGORIES", "PERMISSIONS", "LOGS", "GOODS", "ACCOUNTS",
+        "ORDERPARTS", "CREDITS"
+    };
+
+    /**
+     * For each database table that can be transfered, this constant holds a
+     * string describing which columns can be transfered. These correspond
+     * to the <code>INSERTCOLUMNS</code> parameter of the
+     * <code>SYSCS_UTIL.SYSCS_IMPORT_DATA</code> Derby system procedure.
+     * See the <a href="http://db.apache.org/derby/docs/10.6/ref/">Derby
+     * reference</a> for details.
+     * @see #TABLES
+     * @see #INSERTPOSITIONS
+     */
+    public static final String[] COLUMNS = {
+        "COMPANYID,DATE,TIME,PAID,PROCESSED", //ORDERS table
+        "DATE,TIME,WAREID,PIECES,PRICEPERPIECE", //REALPURCHASES table
+        "FORENAME,SURNAME,FORM,COMPANYID,SALARY,ISBOSS", //CITIZENS table
+        "DESCRIPTION,DATE,TIME,INCOME,OUTGO,CATEGORY", //ACCOUNTING table
+        "NAME,ROOM,PRODUCTDESCRIPTION,JOBS", //COMPANIES table
+        "NAME", //ACCOUNTING_CATEGORIES table
+        "MODULE,USERNAME", //PERMISSIONS table
+        "CITIZENID,DATE,TIME,TYPE", //LOGS table
+        "NAME,REALPRICE,FICTIVEPRICE,SELLER,PACKAGESIZE,PACKAGENAME,PACKAGEUNIT,"
+                + "AVAILABLE", //GOODS table
+        "USERNAME,HASH", //ACCOUNTS table
+        "ORDERID,WAREID,PIECES", //ORDERPARTS table
+        "COMPANYID,CITIZENID,AMOUNT,INTEREST,STARTDAY,ENDDAY,PAID" //CREDITS table
+    };
+
+    /**
+     * For each database table that can be transfered, this constant holds a string
+     * describing where the columns to be transfered should be inserted. These
+     * correspond to the <code>COLUMNINDEXES</code> parameter of the
+     * <code>SYSCS_UTIL.SYSCS_IMPORT_DATA</code> Derby system procedure.
+     * See the <a href="http://db.apache.org/derby/docs/10.6/ref/">Derby
+     * reference</a> for details.
+     * @see #TABLES
+     * @see #COLUMNS
+     */
+    public static final String[] INSERTPOSITIONS = {
+        "2,3,4,5,6", //ORDERS table
+        "1,2,3,4,5", //REALPURCHASES table
+        "2,3,4,5,6,7", //CITIZENS table
+        "2,3,4,5,6,7", //ACCOUNTING table
+        "2,3,4,5", //COMPANIES table
+        "1", //ACCOUNTING_CATEGORIES table
+        "1,2", //PERMISSIONS table
+        "1,2,3,4", //LOGS table
+        "2,3,4,5,6,7,8,9", //GOODS table
+        "1,2", //ACCOUNTS table
+        "1,2,3", //ORDERPARTS table
+        "2,3,4,5,6,7,8" //CREDITS table
+    };
+
     //===============================FIELDS===================================//
 
     File sourceFolder;
     File targetFolder;
+
+    Integer[] tablesToBeTransfered;
+    boolean replace;
+
 
     //============================CONSTRUCTORS================================//
 
     //==============================METHODS===================================//
 
     /**
-     * Utility method. Shows the user a customised <code>JFileChooser</code> to let them
+     * Utility method. Shows the user a customised JFileChooser to let them
      * choose a database path.
      * @return The chosen database path, or null if cancelled.
      */

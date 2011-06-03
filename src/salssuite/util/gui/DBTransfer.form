@@ -126,7 +126,7 @@
         <Property name="toolTipText" type="java.lang.String" value="Den Zieldatenbank-Ordner w&#xe4;hlen."/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chooserTargetDBPath"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chooseTargetDBPath"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="mergeButton">
