@@ -71,11 +71,8 @@ public class AddCreditDialog extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        citizenIDInput = new javax.swing.JTextField();
-        companyIDInput = new javax.swing.JTextField();
-        citizenDisplay = new javax.swing.JLabel();
-        companyDisplay = new javax.swing.JLabel();
+        IDInput = new javax.swing.JTextField();
+        citizenOrCompanyDisplay = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         amountInput = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
@@ -89,6 +86,7 @@ public class AddCreditDialog extends javax.swing.JDialog {
         currentYearDisplay2 = new javax.swing.JLabel();
         confirmButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        IDTypeChooser = new javax.swing.JComboBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Kredit hinzufügen");
@@ -96,23 +94,14 @@ public class AddCreditDialog extends javax.swing.JDialog {
         jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD, jLabel1.getFont().getSize()+2));
         jLabel1.setText("Kredit hinzufügen");
 
-        jLabel2.setText("<html>Kreditnehmer (<b>entweder</b> Bürger- <b>oder</b> Firmen-Nr. eingeben!)</html>");
+        jLabel2.setText("Kreditnehmer");
 
-        jLabel3.setText("Bürger Nr.");
+        jLabel3.setText("Nr.");
 
-        jLabel4.setText("Firma Nr.");
-
-        citizenIDInput.setToolTipText("ID des Bürgers, der den Kredit erhält.");
-        citizenIDInput.addKeyListener(new java.awt.event.KeyAdapter() {
+        IDInput.setToolTipText("ID des Bürgers, der den Kredit erhält.");
+        IDInput.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                updateCitizenDisplay(evt);
-            }
-        });
-
-        companyIDInput.setToolTipText("ID der Firma, die den Kredit erhält.");
-        companyIDInput.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                updateCompanyDisplay(evt);
+                updateCitizenOrCompanyDisplay(evt);
             }
         });
 
@@ -157,6 +146,9 @@ public class AddCreditDialog extends javax.swing.JDialog {
             }
         });
 
+        IDTypeChooser.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Betrieb", "Bürger" }));
+        IDTypeChooser.setToolTipText("Auswählen, ob ein Bürger oder ein Betrieb den Kredit erhalten soll.");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -167,56 +159,48 @@ public class AddCreditDialog extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(jLabel5)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(amountInput, javax.swing.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addGap(12, 12, 12)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel3)
-                                            .addComponent(jLabel4))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(companyIDInput)
-                                            .addComponent(citizenIDInput, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel6)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(interestInput, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(1, 1, 1)
-                                        .addComponent(jLabel7))
-                                    .addComponent(companyDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
-                                    .addComponent(citizenDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(jLabel8)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(startDayInput))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(jLabel9)
-                                        .addGap(65, 65, 65)
-                                        .addComponent(endDayInput, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(IDTypeChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(3, 3, 3)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(currentYearDisplay2)
-                                    .addComponent(currentYearDisplay1))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 282, Short.MAX_VALUE)))
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(IDInput, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(citizenOrCompanyDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)))
                         .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(cancelButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 318, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 328, Short.MAX_VALUE)
                         .addComponent(confirmButton)
-                        .addGap(22, 22, 22))))
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel9))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(endDayInput, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(currentYearDisplay1))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(startDayInput, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(currentYearDisplay2)))
+                        .addGap(273, 273, 273))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addGap(4, 4, 4)
+                        .addComponent(amountInput, javax.swing.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(interestInput, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel7)
+                        .addGap(130, 130, 130))))
         );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {citizenIDInput, companyIDInput});
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {amountInput, interestInput});
 
@@ -226,46 +210,44 @@ public class AddCreditDialog extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(citizenIDInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(citizenDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(companyIDInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(companyDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(33, 33, 33)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(IDTypeChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3)
+                            .addComponent(IDInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(citizenOrCompanyDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(53, 53, 53)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(amountInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6)
                     .addComponent(interestInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
-                .addGap(44, 44, 44)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 35, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
                     .addComponent(endDayInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9)
                     .addComponent(currentYearDisplay1, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
                     .addComponent(startDayInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(currentYearDisplay2, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(confirmButton)
-                    .addComponent(cancelButton))
+                    .addComponent(cancelButton)
+                    .addComponent(confirmButton))
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {citizenIDInput, companyIDInput});
-
         layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {endDayInput, startDayInput});
+
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {amountInput, interestInput});
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -276,37 +258,25 @@ public class AddCreditDialog extends javax.swing.JDialog {
 
     private void confirm(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirm
         //parse IDs
-        int citizenID = -1, companyID = -1;
+        int ID = -1;
         
-        if(!(citizenIDInput.getText().trim().length() == 0 ||     //means there is text
-                companyIDInput.getText().trim().length() == 0)) { //in both fields
-            JOptionPane.showMessageDialog(this, "<html>Bitte <b>entweder</b> Bürger-"
-                    + " <b>oder</b> Firmen-Nr. eingeben.</html>", "Eingabefehler",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
 
         try {
-            if(citizenIDInput.getText().trim().length() != 0)
-                citizenID = Integer.parseInt(citizenIDInput.getText().trim());
-            else
-                companyID = Integer.parseInt(companyIDInput.getText().trim());
-            if(citizenID < 0 && companyID < 0)
-                throw new NumberFormatException();
+            ID = Integer.parseInt(IDInput.getText());
         }
         catch(NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Bitte positive ganze Zahl"
-                    + " in eines der Felder für die Bürger- bzw. Firmen-Nr."
-                    + " eingeben.", "Eingabefehler", JOptionPane.ERROR_MESSAGE);
+                    + " in das Feld für die Betriebs- bzw. Bürgernummer eingeben.",
+                    "Eingabefehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return;
         }
 
-        //check if IDs exist
+        //check if ID exists
         try {
-            if(citizenID != -1) {
+            if(IDTypeChooser.getSelectedIndex() == 1) { //we're operating on a citizen
                 ResultSet citizen = stmt.executeQuery("SELECT id FROM citizens"
-                        + " WHERE id = " + citizenID);
+                        + " WHERE id = " + ID);
                 if(!citizen.next()) {
                     JOptionPane.showMessageDialog(this, "Kein Bürger mit dieser"
                             + " Nummer vorhanden.", "Datenfehler",
@@ -314,9 +284,9 @@ public class AddCreditDialog extends javax.swing.JDialog {
                     return;
                 }
             }
-            else {
+            else { //we're operating on a company
                 ResultSet company = stmt.executeQuery("SELECT id FROM companies"
-                        + " WHERE id = " + companyID);
+                        + " WHERE id = " + ID);
                 if(!company.next()) {
                     JOptionPane.showMessageDialog(this, "Keine Firma mit dieser"
                             + " Nummer vorhanden.", "Datenfehler",
@@ -391,12 +361,23 @@ public class AddCreditDialog extends javax.swing.JDialog {
             return;
         }
 
+        //make ID strings for the database
+        String companyIDString, citizenIDString;
+        if(IDTypeChooser.getSelectedIndex() == 1) {
+            citizenIDString = ""+ID;
+            companyIDString = "-1";
+        }
+        else {
+            citizenIDString = "-1";
+            companyIDString = ""+ID;
+        }
+
         //insert everything into the database
         try {
             stmt.executeUpdate("INSERT INTO credits VALUES("
                     + "DEFAULT,"
-                    + companyID + ","
-                    + citizenID + ","
+                    + companyIDString + ","
+                    + citizenIDString + ","
                     + amount + ","
                     + interest + ","
                     + "'" + Util.getDateString(startDay) + "',"
@@ -414,76 +395,63 @@ public class AddCreditDialog extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_confirm
 
-    private void updateCitizenDisplay(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_updateCitizenDisplay
+    private void updateCitizenOrCompanyDisplay(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_updateCitizenOrCompanyDisplay
         //get ID
         int ID;
         try {
-            ID = Integer.parseInt(citizenIDInput.getText());
+            ID = Integer.parseInt(IDInput.getText());
         }
         catch(NumberFormatException e) {
-            citizenDisplay.setForeground(Color.RED);
-            citizenDisplay.setText("(Ungültige Eingabe)");
+            citizenOrCompanyDisplay.setForeground(Color.RED);
+            citizenOrCompanyDisplay.setText("(Ungültige Eingabe)");
             return;
         }
 
-        //get citizen if possible
+        //are we operating on a citizen or a company?
+        boolean company = false;
+        if(IDTypeChooser.getSelectedIndex() == 0)
+            company = true;
+
+        //get citizen/company if possible
         try {
-            ResultSet citi = stmt.executeQuery("SELECT forename, surname FROM"
+            ResultSet citizenOrCompany;
+            if(!company)
+                citizenOrCompany = stmt.executeQuery("SELECT forename, surname FROM"
                     + " citizens WHERE id = "+ID);
-            if(citi.next()) {
-                citizenDisplay.setForeground(Color.BLACK);
-                citizenDisplay.setText(citi.getString("forename").split(" ")[0] +
-                        " " + citi.getString("surname"));
+            else
+                citizenOrCompany = stmt.executeQuery("SELECT name FROM"
+                    + " companies WHERE id = "+ID);
+
+            if(citizenOrCompany.next()) {
+                citizenOrCompanyDisplay.setForeground(Color.BLACK);
+                if(!company)
+                    citizenOrCompanyDisplay.setText(
+                            citizenOrCompany.getString("forename").split(" ")[0] +
+                            " " + citizenOrCompany.getString("surname"));
+                else
+                    citizenOrCompanyDisplay.setText(
+                            citizenOrCompany.getString("name"));
             }
             else {
-                citizenDisplay.setForeground(Color.RED);
-                citizenDisplay.setText("(Bürger unbekannt)");
+                citizenOrCompanyDisplay.setForeground(Color.RED);
+                if(!company)
+                    citizenOrCompanyDisplay.setText("(Bürger unbekannt)");
+                else
+                    citizenOrCompanyDisplay.setText("(Betrieb unbekannt)");
             }
         }
         catch(SQLException e) {
-            citizenDisplay.setForeground(Color.RED);
-            citizenDisplay.setText("(Netzwerkfehler)");
+            citizenOrCompanyDisplay.setForeground(Color.RED);
+            citizenOrCompanyDisplay.setText("(Netzwerkfehler)");
         }
-    }//GEN-LAST:event_updateCitizenDisplay
-
-    private void updateCompanyDisplay(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_updateCompanyDisplay
-        //get ID
-        int ID;
-        try {
-            ID = Integer.parseInt(companyIDInput.getText());
-        }
-        catch(NumberFormatException e) {
-            companyDisplay.setForeground(Color.RED);
-            companyDisplay.setText("(Ungültige Eingabe)");
-            return;
-        }
-
-        //get citizen if possible
-        try {
-            ResultSet company = stmt.executeQuery("SELECT name FROM"
-                    + " citizens WHERE id = "+ID);
-            if(company.next()) {
-                companyDisplay.setForeground(Color.BLACK);
-                companyDisplay.setText(company.getString("name"));
-            }
-            else {
-                companyDisplay.setForeground(Color.RED);
-                companyDisplay.setText("(Betrieb unbekannt)");
-            }
-        }
-        catch(SQLException e) {
-            companyDisplay.setForeground(Color.RED);
-            companyDisplay.setText("(Netzwerkfehler)");
-        }
-    }//GEN-LAST:event_updateCompanyDisplay
+    }//GEN-LAST:event_updateCitizenOrCompanyDisplay
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField IDInput;
+    private javax.swing.JComboBox IDTypeChooser;
     private javax.swing.JTextField amountInput;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JLabel citizenDisplay;
-    private javax.swing.JTextField citizenIDInput;
-    private javax.swing.JLabel companyDisplay;
-    private javax.swing.JTextField companyIDInput;
+    private javax.swing.JLabel citizenOrCompanyDisplay;
     private javax.swing.JButton confirmButton;
     private javax.swing.JLabel currentYearDisplay1;
     private javax.swing.JLabel currentYearDisplay2;
@@ -492,7 +460,6 @@ public class AddCreditDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;

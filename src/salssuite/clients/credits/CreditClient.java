@@ -6,6 +6,7 @@
 
 package salssuite.clients.credits;
 
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.sql.Connection;
@@ -14,11 +15,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.GregorianCalendar;
+import javax.swing.AbstractCellEditor;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import salssuite.clients.ConnectDialog;
 import salssuite.server.module.CreditModule;
 import salssuite.util.Constants;
@@ -52,6 +59,9 @@ public class CreditClient extends javax.swing.JFrame {
                 cellUpdated(evt.getFirstRow(), evt.getColumn());
             }
         });
+
+        table.getColumnModel().getColumn(1).setCellEditor(new
+                BorrowerColumnCellEditor(this));
 
         //usability
         addWindowListener(new WindowAdapter() {
@@ -502,49 +512,24 @@ public class CreditClient extends javax.swing.JFrame {
 
         //update the database
         global: try {
-            if(column == 1) { //column ID
+            if(column == 1) { //column borrower
                 String[] input = ((String)newValue).split(" ");
-                String modifier = input[0].toLowerCase();
-                int citizenOrCompanyID = parseCitizenOrCompanyID(row, column);
-                if(citizenOrCompanyID < 0)
-                    return;
+                String modifier = input[0];
+                int citizenOrCompanyID = Integer.parseInt(input[1]);
                 
-                if(modifier.equals("bürger")) {
-                    //check if ID exists
-                    ResultSet citizen = stmt.executeQuery("SELECT id "
-                            + "FROM citizens WHERE id = "+citizenOrCompanyID);
-                    if(!citizen.next()) {
-                        JOptionPane.showMessageDialog(this, "Der gewählte"
-                                + " Bürger existiert nicht.", "Eingabefehler",
-                                JOptionPane.ERROR_MESSAGE);
-                        break global;
-                    }
+                if(modifier.equals("Bürger")) {
                     //update database
                     stmt.executeUpdate("UPDATE credits SET citizenId = "+
                             citizenOrCompanyID + " WHERE id = "+ID);
                     stmt.executeUpdate("UPDATE credits SET companyId = -1"
                             + " WHERE id = "+ID);
                 }
-                else if(modifier.equals("betrieb")) {
-                    //check if ID exists
-                    ResultSet company = stmt.executeQuery("SELECT id "
-                            + "FROM companies WHERE id = "+citizenOrCompanyID);
-                    if(!company.next()) {
-                        JOptionPane.showMessageDialog(this, "Der gewählte"
-                                + " Betrieb existiert nicht.", "Eingabefehler",
-                                JOptionPane.ERROR_MESSAGE);
-                        break global;
-                    }
+                else if(modifier.equals("Betrieb")) {
                     //update database
                     stmt.executeUpdate("UPDATE credits SET companyId = "+
                             citizenOrCompanyID + " WHERE id = "+ID);
                     stmt.executeUpdate("UPDATE credits SET citizenId = -1"
                             + " WHERE id = "+ID);
-                }
-                else {
-                    JOptionPane.showMessageDialog(this, "Bitte den Wert in"
-                            + "der Form 'Bürger|Betrieb ID' eingeben.",
-                            "Eingabefehler", JOptionPane.ERROR_MESSAGE);
                 }
             //end case 1
             }
@@ -626,31 +611,159 @@ public class CreditClient extends javax.swing.JFrame {
         table.changeSelection(row, column, false, false);
     }
 
-    /**
-     * Parses the value of a companyID or citizenID cell the user has edited
-     * and returns the new company ID or citizen ID if it is valid.
-     * @param row The edited cell's row.
-     * @param col The edited cell's column.
-     * @return The company ID or citizen ID.
-     */
-    private int parseCitizenOrCompanyID(int row, int col) {
-        //get the cell value
-        String cellValue = (String)tableModel.getValueAt(row, col);
-
-        //parse the ID
-        int ID;
-        try {
-            ID = Integer.parseInt(cellValue.split(" ")[1]);
-        }
-        catch(Exception e) {
-            JOptionPane.showMessageDialog(this, "Bitte den Wert in der Form "
-                    + "'Bürger|Betrieb ID' eingeben.", "Eingabefehler",
-                    JOptionPane.ERROR_MESSAGE);
-            return -1;
-        }
-
-        return ID;
-    }
-
     //============================INNER CLASSES===============================//
+
+    /**
+     * Custom cell editor for the table's "borrower" column. Lets the user
+     * choose if they want to choose a company or a citizen as borrower
+     * and lets them type in their ID.
+     */
+    private class BorrowerColumnCellEditor extends AbstractCellEditor implements
+            TableCellEditor {
+
+        //Serialization not supported!
+        private static final long serialVersionUID = 1;
+
+
+        //FIELDS
+
+        JPanel cellPanel;
+        JComboBox comboBox;
+        JTextField IDInput;
+
+        CreditClient parent;
+
+        String previousValue = null;
+        
+
+        //CONSTRUCTOR
+        public BorrowerColumnCellEditor(CreditClient parent) {
+            this.parent = parent;
+
+            cellPanel = new JPanel();
+            comboBox = new JComboBox(new String[] {"Betrieb", "Bürger"});
+            comboBox.setEditable(false);
+            IDInput = new JTextField();
+            IDInput.setColumns(4);
+            cellPanel.add(comboBox);
+            cellPanel.add(IDInput);
+        }
+
+
+        //METHODS REQUIRED BY TableCellEditor INTERFACE
+
+        /**
+         * Returns the cell's current value, which is a string representing
+         * a certain citizen or company. It is formatted as follows:
+         * "Bürger"|"Betrieb" [ID]
+         * The company with ID 1 is therefore described by the string
+         * "Betrieb 1".
+         * @return
+         */
+        @Override
+        public Object getCellEditorValue() {
+            String currentValue = "";
+            if(comboBox.getSelectedIndex() == 1)
+                currentValue += "Bürger";
+            else
+                currentValue += "Betrieb";
+
+            //check if ID is valid
+            String IDString = IDInput.getText();
+            int ID;
+            
+            try {
+                ID = Integer.parseInt(IDString);
+            }
+            catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(parent, "Keine gültige ID im"
+                        + " ID-Eingabefeld.", "Eingabefehler",
+                        JOptionPane.ERROR_MESSAGE);
+                return previousValue;
+            }
+
+            if(ID < 0) {
+                JOptionPane.showMessageDialog(parent, "Die eingegebene ID"
+                        + " muss positiv sein.", "Eingabefehler",
+                        JOptionPane.ERROR_MESSAGE);
+                return previousValue;
+            }
+
+            try {
+                if(comboBox.getSelectedIndex() == 1) {
+                    ResultSet citizen = stmt.executeQuery("SELECT id "
+                            + "FROM citizens WHERE id = "+ID);
+                    if(!citizen.next()) {
+                        JOptionPane.showMessageDialog(parent, "Der gewählte"
+                                + " Bürger existiert nicht.", "Eingabefehler",
+                                JOptionPane.ERROR_MESSAGE);
+                        return previousValue;
+                    }
+                }
+                else {
+                    ResultSet company = stmt.executeQuery("SELECT id "
+                            + "FROM companies WHERE id = "+ID);
+                    if(!company.next()) {
+                        JOptionPane.showMessageDialog(parent, "Der gewählte"
+                                + " Betrieb existiert nicht.", "Eingabefehler",
+                                JOptionPane.ERROR_MESSAGE);
+                        return previousValue;
+                    }
+                }
+            }
+            catch(SQLException e) {
+                JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation mit der"
+                        + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                return previousValue;
+            }
+
+            //if all tests succeeded, return the new value
+            currentValue += " " + ID;
+            return currentValue;
+        }
+
+        /**
+         * Returns the component to display in the specified cell.
+         * @param table The table for which the Component is intended.
+         * @param value The current value of the cell.
+         * @param isSelected If the cell is currently selected or not.
+         * @param row The cell's row.
+         * @param column The cell's column.
+         * @return A JPanel containing a JComboxBox and a JTextField, the first
+         * of which lets the user choose whether they want a citizen or a
+         * company to be the borrower and the second of which lets them type
+         * in the company's or citizen's ID.
+         */
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected, int row, int column) {
+
+            previousValue = (String)value;
+
+            if(value == null) {
+                comboBox.setSelectedIndex(0);
+                IDInput.setText("");
+            }
+            else {
+                String IDDescriptor = (String)value;
+                if(IDDescriptor.startsWith("Bürger"))
+                    comboBox.setSelectedIndex(1);
+                else
+                    comboBox.setSelectedIndex(0);
+
+                IDInput.setText(IDDescriptor.split(" ")[1]);
+            }
+
+            table.getColumnModel().getColumn(column).setMinWidth(
+                    (int)cellPanel.getPreferredSize().getWidth()
+                  //  + (int)IDInput.getPreferredSize().getWidth()
+                    );
+            table.setRowHeight(row,
+                    (int)cellPanel.getPreferredSize().getHeight());
+
+            return cellPanel;
+        }
+
+    }
 }
