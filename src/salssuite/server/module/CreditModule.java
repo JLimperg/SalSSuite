@@ -9,6 +9,9 @@ import salssuite.server.Server;
  * Module for the state's credit system. It is meant to implement a mechanism
  * for the state's bank using which it can lend citizens or companies money,
  * optionally with interest.
+ * <p>
+ * This module is responsible for setting up a database table that stores all
+ * the credits. See {@link #buildDatabase}.
  * @author Jannis Limperg
  */
 public class CreditModule implements Module {
@@ -45,14 +48,13 @@ public class CreditModule implements Module {
      *
      * <p>
      *
-     * Note that date and time are stored as strings, not as <code>DATE</code>
-     * and <code>TIME</code> values respectively. These types caused some
-     * strange problems so I decided to go with this not so elegant solution.
+     * Note that dates are stored as strings, not as <code>DATE</code> objects.
+     * The <code>DATE</code> type caused some strange problems so I decided to
+     * go with this not so elegant solution.
      * <p>
-     * To create and parse standardised time strings, use
-     * {@link salssuite.util.Util#getDateString}/{@link salssuite.util.Util#getTimeString} and
-     * {@link salssuite.util.Util#parseDateString}/{@link salssuite.util.Util#parseTimeString}
-     * respectively.
+     * To create and parse standardised date strings, use
+     * {@link salssuite.util.Util#getDateString} and
+     * {@link salssuite.util.Util#parseDateString}.
      *
      * <p>
      *

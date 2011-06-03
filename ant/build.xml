@@ -76,7 +76,7 @@ For testing purpose there is also a target to clean everything:
 
 <target name="jar"
     depends="jarinstaller, jaruninstaller, jarserver, jardutyclient, jarmagazineclient,
-             jaraccountingclient, jaremploymentclient, jaradminclient"
+             jaraccountingclient, jaremploymentclient, jaradminclient, jarcreditclient"
     description="Makes jars for Server, Clients, and Installers">
 </target>
 
@@ -182,6 +182,19 @@ For testing purpose there is also a target to clean everything:
         <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Adminclient.jar" perm="a+x" />
+</target>
+
+<target name="jarcreditclient" depends="movetoonedir"
+    description="Bundles all relevant classes to one credit client jar file." >
+    <jar destfile="${target_jars_dir}/KreditClient.jar"
+    basedir="${temporary_classes_dir}" excludes="*.jar, *.war">
+        <manifest>
+            <attribute name="Main-Class" value="salssuite.clients.credits.CreditClient" />
+        </manifest>
+        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+    </jar>
+    <chmod file="${target_jars_dir}/KreditClient.jar" perm="a+x" />
 </target>
     
 

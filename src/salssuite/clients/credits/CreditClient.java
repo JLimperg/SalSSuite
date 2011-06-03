@@ -497,9 +497,9 @@ public class CreditClient extends javax.swing.JFrame {
 
     /**
      * Responds to a cell value change by the user. They may freely edit cells
-     * (except for the "ID" and the "paid" column) to manipulate the credit data.
-     * This method is called each time a cell is edited in that way and updates the
-     * database accordingly.
+     * (except for the "ID" and the "total amount" columns) to manipulate the
+     * credit data. This method is called each time a cell is edited in that way
+     * and updates the database accordingly.
      * @param row The edited cell's row.
      * @param column The edited cell's column.
      */

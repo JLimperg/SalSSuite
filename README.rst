@@ -46,8 +46,6 @@ Next Major Steps
 
 - write comprehensive documentation for the users
 
-- add additional modules, e.g. for the bank
-
 - add support for localisation
 
 Repository Contents
