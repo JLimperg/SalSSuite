@@ -96,7 +96,7 @@
                 <Column editable="false" title="ID" type="java.lang.Integer"/>
                 <Column editable="true" title="Kreditnehmer" type="java.lang.String"/>
                 <Column editable="false" title="Gesamtbetrag" type="java.lang.Double"/>
-                <Column editable="true" title="zur&#xfc;ckgezahlt" type="java.lang.String"/>
+                <Column editable="true" title="zur&#xfc;ckgezahlt" type="java.lang.Boolean"/>
                 <Column editable="true" title="Startbetrag" type="java.lang.Double"/>
                 <Column editable="true" title="Zinssatz/Tag" type="java.lang.Double"/>
                 <Column editable="true" title="ausgezahlt am" type="java.lang.String"/>

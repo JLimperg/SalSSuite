@@ -180,7 +180,7 @@ public class CreditClient extends javax.swing.JFrame {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class, java.lang.String.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Boolean.class, java.lang.Double.class, java.lang.Double.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
                 false, true, false, true, true, true, true, true
@@ -465,9 +465,9 @@ public class CreditClient extends javax.swing.JFrame {
                 //set rest of data
                 row[2] = amount;
                 if(data.getInt("paid") == 0)
-                    row[3] = "nein";
+                    row[3] = false;
                 else
-                    row[3] = "ja";
+                    row[3] = true;
                 row[4] = originalAmount;
                 row[5] = interest;
                 row[6] = data.getString("startDay");
@@ -549,17 +549,13 @@ public class CreditClient extends javax.swing.JFrame {
             //end case 1
             }
             else if(column == 3) { //column paid back
-                String input = ((String)newValue).toLowerCase().trim();
-                if(input.equals("ja"))
+                boolean input = (Boolean)newValue;
+                if(input)
                     stmt.executeUpdate("UPDATE credits SET paid = 1 WHERE ID = "
                             + ID);
-                else if(input.equals("nein"))
+                else
                     stmt.executeUpdate("UPDATE credits SET paid = 0 WHERE ID = "
                             + ID);
-                else
-                    JOptionPane.showMessageDialog(this, "Bitte 'ja' oder 'nein'"
-                            + " eingeben.", "Eingabefehler",
-                            JOptionPane.ERROR_MESSAGE);
             //end case 3
             }
             else if(column == 4 || column == 5) { //columns amount and interest
