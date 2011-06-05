@@ -7,13 +7,18 @@
 package salssuite.server.module.gui;
 
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import salssuite.util.Util;
 import salssuite.util.gui.FilterPanel;
@@ -100,6 +105,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
         filterPanelPlaceholder = new javax.swing.JPanel();
         addCitizenButton = new javax.swing.JButton();
         refreshButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(750, 500));
 
@@ -141,6 +147,14 @@ public class CitizenModulePanel extends javax.swing.JPanel {
             }
         });
 
+        jButton1.setText("Bürgerliste erstellen");
+        jButton1.setToolTipText("Speichert eine Bürgerliste im CSV-Format.");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateCitizenList(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -148,14 +162,16 @@ public class CitizenModulePanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(filterPanelPlaceholder, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 744, Short.MAX_VALUE)
+                    .addComponent(filterPanelPlaceholder, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addCitizenButton)
                         .addGap(18, 18, 18)
                         .addComponent(deleteCitizenButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 362, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 170, Short.MAX_VALUE)
+                        .addComponent(jButton1)
+                        .addGap(18, 18, 18)
                         .addComponent(refreshButton))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 744, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
                     .addComponent(jLabel1))
                 .addContainerGap())
         );
@@ -163,7 +179,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(6, 6, 6)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -172,7 +188,8 @@ public class CitizenModulePanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addCitizenButton)
                     .addComponent(deleteCitizenButton)
-                    .addComponent(refreshButton))
+                    .addComponent(refreshButton)
+                    .addComponent(jButton1))
                 .addGap(12, 12, 12))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -225,11 +242,67 @@ public class CitizenModulePanel extends javax.swing.JPanel {
             tableModel.removeRow(deleteRows[ct]-ct);
     }//GEN-LAST:event_deleteCitizen
 
+    private void generateCitizenList(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateCitizenList
+        //ask the user for a file to store the data
+        File destFile;
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Csv-Dateien",
+                "csv"));
+        fileChooser.setDialogTitle("Betriebsliste speichern");
+        int option = fileChooser.showSaveDialog(getTopLevelAncestor());
+        if(option != JFileChooser.APPROVE_OPTION)
+            return;
+        destFile = fileChooser.getSelectedFile();
+
+        //open the file and print the header
+        PrintWriter out;
+        try {
+            out = new PrintWriter(new java.io.FileWriter(destFile));
+            out.println("\"Nummer\",\"Nachname\",\"Vorname\",\"Klasse\","
+                    + "\"Betriebsnummer\"");
+            out.flush();
+        }
+        catch(IOException e) {
+            JOptionPane.showMessageDialog(getTopLevelAncestor(), "Konnte gewählte"
+                    + "Datei nicht öffnen", "Dateifehler", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        //print the data
+        try {
+            ResultSet data = stmt.executeQuery("SELECT * FROM citizens");
+            while(data.next()) {
+                String line = "";
+                line += data.getInt("id") + ",";
+                line += "\"" + data.getString("surname") + "\",";
+                line += "\"" + data.getString("forename") + "\",";
+                line += "\"" + data.getString("form") + "\",";
+                line += data.getInt("companyId");
+                out.println(line);
+            }
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
+
+        out.flush();
+
+        //display a success message
+        JOptionPane.showMessageDialog(this, "Liste erstellt.", "Erfolg",
+                JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_generateCitizenList
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addCitizenButton;
     private javax.swing.JButton deleteCitizenButton;
     private javax.swing.JPanel filterPanelPlaceholder;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton refreshButton;
