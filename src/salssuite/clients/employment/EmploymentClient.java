@@ -673,6 +673,10 @@ public class EmploymentClient extends javax.swing.JFrame {
      * @param args Command line arguments are not supported.
      */
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch(Exception e) {}
+
         new EmploymentClient().setVisible(true);
     }
 

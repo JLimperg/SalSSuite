@@ -67,12 +67,12 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jScrollPane1" alignment="0" pref="373" max="32767" attributes="0"/>
+                              <Component id="jScrollPane1" alignment="0" pref="376" max="32767" attributes="0"/>
                               <Component id="displayOnlyWithFreeJobsToggle" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="companyFilterFeedbackDisplay" pref="233" max="32767" attributes="0"/>
+                                  <Component id="companyFilterFeedbackDisplay" pref="236" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="jLabel11" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -94,7 +94,7 @@
                               <Component id="companyFilterFeedbackDisplay" alignment="3" min="-2" pref="17" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jScrollPane1" pref="237" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" pref="224" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="displayOnlyWithFreeJobsToggle" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -179,7 +179,7 @@
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="jScrollPane4" pref="373" max="32767" attributes="2"/>
+                                  <Component id="jScrollPane4" pref="376" max="32767" attributes="2"/>
                                   <EmptySpace min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
@@ -187,7 +187,7 @@
                                       <Group type="102" alignment="0" attributes="0">
                                           <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="companyDescriptionDisplay" pref="309" max="32767" attributes="0"/>
+                                          <Component id="companyDescriptionDisplay" pref="313" max="32767" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Group type="103" groupAlignment="0" attributes="0">
@@ -213,8 +213,8 @@
                                                       <Component id="jLabel10" alignment="0" max="32767" attributes="1"/>
                                                   </Group>
                                               </Group>
-                                              <Component id="companyFounderDisplay" alignment="0" pref="308" max="32767" attributes="2"/>
-                                              <Component id="companyNameDisplay" alignment="0" pref="308" max="32767" attributes="0"/>
+                                              <Component id="companyFounderDisplay" alignment="0" pref="313" max="32767" attributes="2"/>
+                                              <Component id="companyNameDisplay" alignment="0" pref="313" max="32767" attributes="0"/>
                                           </Group>
                                       </Group>
                                   </Group>
@@ -223,7 +223,7 @@
                               <Component id="jLabel14" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="143" max="32767" attributes="0"/>
+                                  <EmptySpace pref="176" max="32767" attributes="0"/>
                                   <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
@@ -270,7 +270,7 @@
                           <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                           <Component id="jLabel14" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="jScrollPane4" pref="72" max="32767" attributes="0"/>
+                          <Component id="jScrollPane4" pref="50" max="32767" attributes="0"/>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -425,10 +425,10 @@
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jScrollPane3" alignment="0" pref="373" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" alignment="0" pref="378" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="41" max="32767" attributes="0"/>
+                              <EmptySpace pref="49" max="32767" attributes="0"/>
                               <Component id="unemployedFilterFeedbackDisplay" min="-2" pref="161" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel12" min="-2" max="-2" attributes="0"/>
@@ -442,7 +442,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel16" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="totalFreeJobsDisplay" pref="46" max="32767" attributes="0"/>
+                              <Component id="totalFreeJobsDisplay" pref="65" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -462,7 +462,7 @@
                           <Component id="unemployedFilterFeedbackDisplay" min="-2" pref="19" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane3" pref="538" max="32767" attributes="0"/>
+                      <Component id="jScrollPane3" pref="528" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="103" groupAlignment="3" attributes="0">
