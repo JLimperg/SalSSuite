@@ -36,6 +36,8 @@ For testing purpose there is also a target to clean everything:
     location="/home/jannis/SalSSuite/git-repo/build/classes" />
 <property name="source_derby_dir"
     location="/home/jannis/SalSSuite/git-repo/lib/derby/lib" />
+<property name="source_markdownj_dir"
+    location="/home/jannis/SalSSuite/git-repo/lib/markdownj" />
 <property name="source_std_api_javadoc"
     value="http://download.oracle.com/javase/6/docs/api/" />
 
@@ -68,6 +70,11 @@ For testing purpose there is also a target to clean everything:
     <copy todir="${temporary_classes_dir}">
         <fileset dir="${source_derby_dir}" />
     </copy>
+    
+    <!-- Move Markdownj files to tmp folder -->
+    <copy todir="${temporary_classes_dir}">
+        <fileset dir="${source_markdownj_dir}" />
+    </copy>
 </target>
 
                             <!-- JAR TARGETS -->
@@ -88,7 +95,8 @@ For testing purpose there is also a target to clean everything:
         basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
         <manifest>
             <attribute name="Main-Class" value="salssuite.util.gui.Installer" />
-        </manifest>      
+        </manifest>
+        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />      
     </jar>
     <chmod file="${target_jars_dir}/Installer.jar" perm="a+x" />
 </target>
@@ -99,7 +107,8 @@ For testing purpose there is also a target to clean everything:
         basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
         <manifest>
             <attribute name="Main-Class" value="salssuite.util.gui.Uninstaller" />
-        </manifest>     
+        </manifest>
+        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />     
     </jar>
     <chmod file="${target_jars_dir}/Uninstaller.jar" perm="a+x" />
 </target>
@@ -115,6 +124,7 @@ For testing purpose there is also a target to clean everything:
         <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
         <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
         <zipfileset src="${temporary_classes_dir}/derbynet.jar" />
+        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Server.jar" perm="a+x" />
 </target>
@@ -128,6 +138,7 @@ For testing purpose there is also a target to clean everything:
         </manifest>
         <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
         <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Zollclient.jar" perm="a+x" />
 </target>
@@ -141,6 +152,7 @@ For testing purpose there is also a target to clean everything:
         </manifest>
         <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
         <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Warenlagerclient.jar" perm="a+x" />
 </target>
@@ -154,6 +166,7 @@ For testing purpose there is also a target to clean everything:
         </manifest>
         <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
         <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Buchhaltungsclient.jar" perm="a+x" />
 </target>
@@ -167,6 +180,7 @@ For testing purpose there is also a target to clean everything:
         </manifest>
         <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
         <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Arbeitsamtclient.jar" perm="a+x" />
 </target>
@@ -180,6 +194,7 @@ For testing purpose there is also a target to clean everything:
         </manifest>
         <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
         <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Adminclient.jar" perm="a+x" />
 </target>
