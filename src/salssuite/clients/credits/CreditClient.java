@@ -31,6 +31,7 @@ import salssuite.server.module.CreditModule;
 import salssuite.util.Constants;
 import salssuite.util.Util;
 import salssuite.util.gui.FilterPanel;
+import salssuite.util.gui.HelpBrowser;
 
 /**
  * Client used to access and manipulate the credit data. See the corresponding
@@ -168,6 +169,7 @@ public class CreditClient extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         onlyDueFilter = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
+        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SalSSuite - Kredite");
@@ -257,6 +259,13 @@ public class CreditClient extends javax.swing.JFrame {
 
         jLabel1.setText("Zum Bearbeiten eines Wertes auf die Zelle doppelklicken, neuen Wert eingeben und <Enter> drücken.");
 
+        jButton3.setText("Hilfe!");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                help(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -269,7 +278,9 @@ public class CreditClient extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(onlyOpenFilter)
                         .addGap(18, 18, 18)
-                        .addComponent(onlyDueFilter))
+                        .addComponent(onlyDueFilter)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 591, Short.MAX_VALUE)
+                        .addComponent(jButton3))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jButton1)
                         .addGap(18, 18, 18)
@@ -285,9 +296,10 @@ public class CreditClient extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(onlyOpenFilter)
-                    .addComponent(onlyDueFilter))
+                    .addComponent(onlyDueFilter)
+                    .addComponent(jButton3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -355,6 +367,10 @@ public class CreditClient extends javax.swing.JFrame {
             tableModel.removeRow(rows[ct]-ct);
     }//GEN-LAST:event_removeCredit
 
+    private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
+        new HelpBrowser("CreditClient").setVisible(true);
+    }//GEN-LAST:event_help
+
     /**
      * Creates a new <code>CreditClient</code> and displays it.
      * @param args Command line arguments not supported.
@@ -376,6 +392,7 @@ public class CreditClient extends javax.swing.JFrame {
     private javax.swing.JPanel filterPanelPlaceholder;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JCheckBox onlyDueFilter;
