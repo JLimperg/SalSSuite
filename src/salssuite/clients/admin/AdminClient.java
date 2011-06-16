@@ -24,6 +24,7 @@ import salssuite.server.module.gui.DutyModulePanel;
 import salssuite.server.gui.AccountManagingPanel;
 import salssuite.server.module.*;
 import salssuite.util.Constants;
+import salssuite.util.gui.HelpBrowser;
 import salssuite.util.gui.PasswordPanel;
 
 /**
@@ -120,6 +121,7 @@ public class AdminClient extends javax.swing.JFrame {
         logoutButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         mainPanel = new javax.swing.JTabbedPane();
+        jButton1 = new javax.swing.JButton();
 
         logoutButton.setText("Logout");
 
@@ -150,10 +152,41 @@ public class AdminClient extends javax.swing.JFrame {
         setTitle("SalSSuite - Administration");
 
         mainPanel.setPreferredSize(new java.awt.Dimension(775, 500));
-        getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
+
+        jButton1.setText("Hilfe!");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                help(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton1)
+                .addGap(12, 12, 12))
+        );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
+        new HelpBrowser("AdminClient").setVisible(true);
+    }//GEN-LAST:event_help
 
     /**
      * Creates a new <code>AdminClient</code> and displays it.
@@ -180,6 +213,7 @@ public class AdminClient extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton logoutButton;
     private javax.swing.JPanel logoutPanel;
