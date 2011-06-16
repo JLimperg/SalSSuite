@@ -208,7 +208,8 @@ public class AdminClient extends javax.swing.JFrame {
         CompanyModule.NAME,
         DutyModule.NAME,
         EmploymentModule.NAME,
-        MagazineModule.NAME
+        MagazineModule.NAME,
+        CreditModule.NAME
     };
 
     //===============================FIELDS===================================//

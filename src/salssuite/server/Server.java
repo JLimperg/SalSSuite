@@ -42,6 +42,7 @@ import salssuite.util.Util;
 import salssuite.util.gui.ProgressDialog;
 import java.util.Scanner;
 import salssuite.server.module.AdminModule;
+import salssuite.server.module.CreditModule;
 
 /**
  * The SalSSuite server.
@@ -219,6 +220,7 @@ public class Server {
     AccountingModule accountingModule;
     EmploymentModule employmentModule;
     AdminModule adminModule;
+    CreditModule creditModule;
 
     //log output
     PrintWriter logOut;
@@ -500,6 +502,8 @@ public class Server {
         modules.add(employmentModule);
         adminModule = new AdminModule();
         modules.add(adminModule);
+        creditModule = new CreditModule(this);
+        modules.add(creditModule);
 
         for(Module module: modules)
             writeToLog("SERVER: Inserted module '"+module.getName()+"'.");

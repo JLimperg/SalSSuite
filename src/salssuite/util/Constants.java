@@ -107,6 +107,11 @@ public class Constants {
      */
     public static final Preferences employmentClientNode = programmeNode.
             node("EmploymentClient");
+    /**
+     * The node for the <code>CreditClient</code>.
+     */
+    public static final Preferences creditClientNode = programmeNode.node(
+            "CreditClient");
 
 
 //===============================FIELDS=======================================\\
