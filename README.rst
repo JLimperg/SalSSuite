@@ -44,8 +44,6 @@ Current State of Development
 Next Major Steps
 ----------------
 
-- write comprehensive documentation for the users
-
 - add support for localisation
 
 Repository Contents
@@ -53,7 +51,7 @@ Repository Contents
 
 - **./src** contains all the source files
 
-- **./lib** contains necessary libraries (currently only Derby)
+- **./lib** contains necessary libraries (currently Derby and MarkdownJ)
 
 - **./build.xml** NetBeans-generated ant buildfile
 
