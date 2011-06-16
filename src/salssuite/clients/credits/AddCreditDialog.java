@@ -148,6 +148,11 @@ public class AddCreditDialog extends javax.swing.JDialog {
 
         IDTypeChooser.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Betrieb", "Bürger" }));
         IDTypeChooser.setToolTipText("Auswählen, ob ein Bürger oder ein Betrieb den Kredit erhalten soll.");
+        IDTypeChooser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateCitizenOrCompanyDisplay_ComboBox(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -445,6 +450,10 @@ public class AddCreditDialog extends javax.swing.JDialog {
             citizenOrCompanyDisplay.setText("(Netzwerkfehler)");
         }
     }//GEN-LAST:event_updateCitizenOrCompanyDisplay
+
+    private void updateCitizenOrCompanyDisplay_ComboBox(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateCitizenOrCompanyDisplay_ComboBox
+        updateCitizenOrCompanyDisplay(null);
+    }//GEN-LAST:event_updateCitizenOrCompanyDisplay_ComboBox
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField IDInput;
