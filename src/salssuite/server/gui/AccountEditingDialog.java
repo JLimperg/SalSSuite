@@ -68,13 +68,7 @@ public class AccountEditingDialog extends javax.swing.JDialog {
         buildPermissionPanel();
 
         //usability
-        if(parent != null) {
-            int x = (int)(parent.getLocation().getX() + parent.getWidth()*0.5
-                    - getPreferredSize().getWidth()*0.5);
-            int y = (int)(parent.getLocation().getY() + parent.getHeight()*0.5
-                    - getPreferredSize().getHeight()*0.5);
-            setLocation(x, y);
-        }
+        setLocationRelativeTo(parent);
     }
 
     /** This method is called from within the constructor to
@@ -107,8 +101,8 @@ public class AccountEditingDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
-                .addComponent(usernameDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(usernameDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 336, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
