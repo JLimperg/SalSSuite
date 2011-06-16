@@ -125,17 +125,21 @@ public class MagazineClientShoppingListPartPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void boughtButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boughtButtonActionPerformed
-        //get bought amount of ware
+        //get required amount of ware
+        int reqAmount = getRequiredAmount();
+
+        //get bought amount
+        int boughtAmount;
+
         do {
             try {
-                int reqAmount = getRequiredAmount();
                 String boughtAmountString = JOptionPane.showInputDialog(parent, "Von "+
                         reqAmount+" wurden gekauft: ", reqAmount);
 
                 if(boughtAmountString == null) //means user has cancelled
                     return;
 
-                boughtAmount += Integer.parseInt(boughtAmountString);
+                boughtAmount = Integer.parseInt(boughtAmountString);
 
                 break;
             }
@@ -170,6 +174,22 @@ public class MagazineClientShoppingListPartPanel extends javax.swing.JPanel {
             e.printStackTrace();
             return;
         }
+
+        //update the panel
+        requiredAmountDisplay.setText(""+(reqAmount-boughtAmount));
+
+        //remove this panel from the list if the user has bought more units than
+        //are required
+        //DEBUG
+        System.out.println("Required amount: "+reqAmount);
+        System.out.println("Bought amount: "+boughtAmount);
+        
+        if(reqAmount - boughtAmount <= 0) {
+            Container parentPanel = getParent();
+            parentPanel.remove(this);
+            parentPanel.validate();
+            parentPanel.repaint();
+        }
     }//GEN-LAST:event_boughtButtonActionPerformed
 
 
@@ -188,8 +208,7 @@ public class MagazineClientShoppingListPartPanel extends javax.swing.JPanel {
     //==============================CONSTANTS=================================//
 
     //===============================FIELDS===================================//
-
-    int boughtAmount = 0;
+    
     int wareID;
 
     Container parent;
@@ -209,7 +228,7 @@ public class MagazineClientShoppingListPartPanel extends javax.swing.JPanel {
     public void setNotRequiredAnyMore() {
 
         int requiredAmount = getRequiredAmount();
-        boughtAmount = requiredAmount;
+        int boughtAmount = requiredAmount;
 
         //update the data
         int availableAmount;
@@ -239,7 +258,10 @@ public class MagazineClientShoppingListPartPanel extends javax.swing.JPanel {
         }
 
         //remove this panel
-        parent.remove(this);
+        Container parentPanel = getParent();
+        parentPanel.remove(this);
+        parentPanel.validate();
+        parentPanel.repaint();
     }
 
     /**
@@ -278,14 +300,6 @@ public class MagazineClientShoppingListPartPanel extends javax.swing.JPanel {
             return -1;
         }
 
-    }
-
-    /**
-     * Returns how many pieces of the ware were 'bought' using this panel.
-     * @return The amount bought.
-     */
-    public int getBoughtAmount() {
-        return boughtAmount;
     }
 
     /**
