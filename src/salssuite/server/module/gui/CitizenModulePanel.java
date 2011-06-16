@@ -60,6 +60,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
                     dbcon,
                     new String[] {"ID, forename, surname, form, companyId"},
                     "citizens",
+                    "ID",
                     new String[] {"forename", "surname", "form"}, //string fields
                     new String[] {"ID", "companyId"}, //number fields
                     new String[] {}, //date fields

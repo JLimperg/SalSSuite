@@ -685,7 +685,7 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
         try {
             //query the database
             ResultSet goods = stmt.executeQuery("SELECT id, available FROM" +
-                    " goods");
+                    " goods ORDER BY id");
 
             //build the graphical representation
             while(goods.next()) {

@@ -65,6 +65,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
                     dbcon,
                     new String[] {"id, name, room, productDescription"},
                     "companies",
+                    "ID",
                     new String[] {"name", "room", "productDescription"}, //string fields
                     new String[] {"id"}, //number fields
                     new String[] {}, //date fields

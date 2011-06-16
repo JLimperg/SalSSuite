@@ -94,6 +94,7 @@ public class AccountingClient extends javax.swing.JFrame {
                     dbcon,
                     new String[] {"*"},
                     "accounting",
+                    "ID",
                     new String[] {"category"}, //string fields
                     new String[] {"id", "outgo", "income"}, //number fields
                     new String[] {"date"}, //date fields

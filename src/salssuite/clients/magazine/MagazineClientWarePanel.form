@@ -29,7 +29,7 @@
               <Component id="editWareButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="deleteWareButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="248" max="32767" attributes="0"/>
+              <EmptySpace pref="251" max="32767" attributes="0"/>
               <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

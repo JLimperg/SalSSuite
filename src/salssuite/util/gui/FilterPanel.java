@@ -102,6 +102,11 @@ public class FilterPanel extends javax.swing.JPanel{
      * NUMBER_FIELD, STRING_FIELD or DATE_FIELD.
      */
     TreeMap<String, Integer> fieldTypes = new TreeMap<String, Integer>();
+    
+    /**
+     * Value of the 'ORDER BY' SQL parameter.
+     */
+    String orderBy;
 
     //============================CONSTRUCTORS================================//
 
@@ -117,6 +122,7 @@ public class FilterPanel extends javax.swing.JPanel{
      * WHERE stringField[0] LIKE '%userInput1%' AND stringField[1] LIKE '%userInput2%' AND ...<br/>
      * AND numberField[0] chosenOperator1 userInput3 AND ...<br/>
      * AND dateField[0] chosenOperator2 userInput4 AND ...<br/>
+     * ORDER BY orderBy
      * </code>
      * <p>
      * String fields are fields where the user can enter any string, which is then
@@ -135,6 +141,9 @@ public class FilterPanel extends javax.swing.JPanel{
      * @param columns The columns which should be included in the <code>ResultSet</code>
      * representing filtered data.
      * @param tableName The name of the database table containing the <code>columns</code>.
+     * @param orderBy Parameter of the query's <code>ORDER BY</code> clause.
+     * A comma-separated list of the columns by which the filtered data should
+     * be ordered.
      * @param stringFields All fields which contain strings. The strings in this
      * array have to correspond to columns in the database containing strings
      * (<code>VARCHAR</code>s).
@@ -168,7 +177,7 @@ public class FilterPanel extends javax.swing.JPanel{
      * </ul>
      */
     public FilterPanel(java.awt.Frame parent, int maxWidth, Connection databaseConnection,
-            String[] columns, String tableName, String[] stringFields, String[]
+            String[] columns, String tableName, String orderBy, String[] stringFields, String[]
             numberFields, String[] dateFields, String[] stringFieldDescriptions, String[]
             numberFieldDescriptions, String[] dateFieldDescriptions) throws SQLException{
 
@@ -187,6 +196,7 @@ public class FilterPanel extends javax.swing.JPanel{
                     " incorrect.");
 
         this.parent = parent;
+        this.orderBy = orderBy;
 
 
         //build basic query string
@@ -425,6 +435,9 @@ public class FilterPanel extends javax.swing.JPanel{
                         Integer.parseInt(input1)+"'");
             }
         }//end for all fields
+
+        //append ORDER BY clause
+        queryString += " ORDER BY " + orderBy;
 
         //=============================EXECUTE QUERY==========================//
 

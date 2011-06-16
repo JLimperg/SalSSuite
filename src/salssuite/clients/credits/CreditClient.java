@@ -120,6 +120,7 @@ public class CreditClient extends javax.swing.JFrame {
                     new String[] {"ID, companyId, citizenId, amount, interest,"
                             + "startDay, endDay", "paid"},
                     "credits",
+                    "ID",
                     new String[] {}, //string fields
                     new String[] {"ID", "companyId", "citizenId", "amount",
                                   "interest"}, //number fields

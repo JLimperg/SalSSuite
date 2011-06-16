@@ -57,6 +57,7 @@ public class DutyModulePanel extends javax.swing.JPanel {
                     dbcon,
                     new String[] {"citizenId, date, time, type"},
                     "logs",
+                    "date, citizenId",
                     new String[] {}, //string fields
                     new String[] {"citizenId"}, //number fields
                     new String[] {"date"}, //date fields

@@ -719,7 +719,7 @@ public class EmploymentClient extends javax.swing.JFrame {
 
             //fetch general company data
             ResultSet companyData = stmt.executeQuery("SELECT id, name, jobs"
-                    + " FROM companies");
+                    + " FROM companies ORDER BY id");
 
             //build table row for each company
             while(companyData.next()) {
@@ -828,7 +828,8 @@ public class EmploymentClient extends javax.swing.JFrame {
         //fetch database stuff and update the list
         try {
             ResultSet employees = stmt.executeQuery("SELECT id, forename, surname"
-                    + " FROM citizens WHERE companyId = " + ID + " AND isBoss = 0");
+                    + " FROM citizens WHERE companyId = " + ID + " AND isBoss = 0"
+                    + " ORDER BY id");
             while(employees.next()) {
                 companyEmployedListModel.addElement(
                         employees.getInt("ID") + " " +
@@ -856,7 +857,7 @@ public class EmploymentClient extends javax.swing.JFrame {
 
         try {
             ResultSet unemployed = stmt.executeQuery("SELECT id, forename, surname"
-                    + " FROM citizens WHERE companyId < 0");
+                    + " FROM citizens WHERE companyId < 0 ORDER BY id");
             while(unemployed.next()) {
                 unemployedListModel.addElement(
                         unemployed.getInt("ID") + " " +

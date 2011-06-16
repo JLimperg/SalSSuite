@@ -68,6 +68,7 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
                     client.getDatabaseConnection(),
                     new String[] {"id"},
                     "orders",
+                    "ID",
                     new String[] {}, //string fields
                     new String[] {"id", "companyId"}, //number fields
                     new String[] {"date"}, //date fields

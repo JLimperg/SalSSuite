@@ -52,6 +52,7 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
                     client.getDatabaseConnection(),
                     new String[] {"*"},
                     "goods",
+                    "id",
                     new String[] {"name", "seller"}, //string fields
                     new String[] {"id", "realPrice", "fictivePrice", "available"}, //number fields
                     new String[] {}, //date fields

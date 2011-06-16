@@ -32,7 +32,7 @@
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="listBoughtButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="251" max="32767" attributes="0"/>
+                      <EmptySpace pref="254" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="reloadDataButton" min="-2" max="-2" attributes="0"/>
                           <Component id="generateBalanceButton" min="-2" max="-2" attributes="0"/>
