@@ -48,7 +48,7 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
         dbcon = databaseConnection;
 
         try {
-        stmt = dbcon.createStatement();
+            stmt = dbcon.createStatement();
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(parent, "Konnte keine Verbindung mit" +
@@ -60,7 +60,6 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
 
         if(companyID < 0) {
             setTitle("SalSSuite - Neuen Betrieb erstellen");
-            IDInput.setText("auto");
             employeeList.setModel(listModel);
             return;
         }
@@ -91,7 +90,6 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
                 founderSalaryInput.setText(""+boss.getDouble("salary"));
             }
 
-            IDInput.setText(""+company.getInt("id"));
             jobsInput.setText(""+company.getInt("jobs"));
             nameInput.setText(company.getString("name"));
             roomInput.setText(company.getString("room"));
@@ -132,8 +130,6 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
 
         jLabel1 = new javax.swing.JLabel();
         nameInput = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        IDInput = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         roomInput = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
@@ -146,7 +142,6 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
         employeeList = new javax.swing.JList();
         jLabel10 = new javax.swing.JLabel();
         founderSalaryInput = new javax.swing.JTextField();
-        currencyLabel = new javax.swing.JLabel();
         addEmloyeeButton = new javax.swing.JButton();
         deleteEmployeeButton = new javax.swing.JButton();
         editEmployeeButton = new javax.swing.JButton();
@@ -165,18 +160,11 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
 
         nameInput.setToolTipText("Der Name des Betriebs.");
 
-        jLabel2.setText("Nummer");
-
-        IDInput.setEditable(false);
-        IDInput.setText("auto");
-        IDInput.setToolTipText("ID des Betriebs. Kann nicht modifiziert werden.");
-        IDInput.setEnabled(false);
-
         jLabel3.setText("Raum");
 
         roomInput.setToolTipText("Der Raum, in dem der Betrieb sich befindet.");
 
-        jLabel4.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel4.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel4.setText("Firma");
 
         jLabel5.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
@@ -191,7 +179,7 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel8.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel8.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel8.setText("Mitarbeiter");
 
         employeeList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -263,131 +251,105 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 595, Short.MAX_VALUE)
+                    .addComponent(jLabel4)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
-                        .addGap(75, 75, 75))
-                    .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE))
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addComponent(jLabel6)
-                .addContainerGap(468, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
-                .addGap(451, 451, 451))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel7)
-                                .addGap(18, 18, 18)
-                                .addComponent(addEmloyeeButton))
-                            .addComponent(cancelButton))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(approveButton))
+                                .addComponent(jLabel10)
+                                .addGap(38, 38, 38))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(53, 53, 53)
-                                .addComponent(editEmployeeButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
-                                .addComponent(deleteEmployeeButton))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jLabel6)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(12, 12, 12)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel10)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE)))
+                                .addComponent(founderIDInput, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(founderNameDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(founderSalaryInput, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel8)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel7)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(founderSalaryInput, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(currencyLabel))
-                            .addComponent(founderIDInput, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(IDInput, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(founderNameDisplay)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel3)
-                                        .addGap(24, 24, 24)
-                                        .addComponent(roomInput, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 253, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(nameInput, javax.swing.GroupLayout.PREFERRED_SIZE, 456, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(productDescriptionInput, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 348, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 92, Short.MAX_VALUE)
+                        .addComponent(addEmloyeeButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(editEmployeeButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deleteEmployeeButton))
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel11)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jobsInput, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(0, 0, 0))
+                        .addComponent(jobsInput, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel3))
+                        .addGap(128, 128, 128)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(roomInput, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(nameInput, javax.swing.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel9)
+                        .addGap(18, 18, 18)
+                        .addComponent(productDescriptionInput, javax.swing.GroupLayout.PREFERRED_SIZE, 425, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(cancelButton)
+                        .addGap(18, 18, 18)
+                        .addComponent(approveButton)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(28, 28, 28)
                 .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(nameInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(8, 8, 8)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(IDInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3)
                     .addComponent(roomInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel9)
                     .addComponent(productDescriptionInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel5)
-                .addGap(9, 9, 9)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(founderIDInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(founderNameDisplay))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(7, 7, 7)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel6)
+                        .addComponent(founderIDInput))
+                    .addComponent(founderNameDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE))
+                .addGap(6, 6, 6)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(founderSalaryInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(currencyLabel))
-                .addGap(33, 33, 33)
+                    .addComponent(founderSalaryInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8)
-                    .addComponent(jobsInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel11))
+                    .addComponent(jLabel11)
+                    .addComponent(jobsInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
                     .addComponent(addEmloyeeButton)
-                    .addComponent(deleteEmployeeButton)
-                    .addComponent(editEmployeeButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                    .addComponent(editEmployeeButton)
+                    .addComponent(deleteEmployeeButton))
+                .addGap(65, 65, 65)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
                     .addComponent(approveButton))
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jLabel1, jLabel4, jLabel5, jLabel9});
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jLabel1, jLabel10, jLabel3, jLabel4, jLabel5, jLabel9});
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -513,11 +475,9 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_approve
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField IDInput;
     private javax.swing.JButton addEmloyeeButton;
     private javax.swing.JButton approveButton;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JLabel currencyLabel;
     private javax.swing.JButton deleteEmployeeButton;
     private javax.swing.JButton editEmployeeButton;
     private javax.swing.JList employeeList;
@@ -527,7 +487,6 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -591,14 +550,6 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
      */
     private boolean parseInput() {
 
-        int ID;
-
-        if(IDInput.getText().equals("auto"))
-            ID = -1;
-        else
-            ID = Integer.parseInt(IDInput.getText());
-
-
         int jobs;
         try {
             jobs = Integer.parseInt(jobsInput.getText());
@@ -647,7 +598,7 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
                         "companies WHERE name = '"+name+"' AND room = '"+room+"' " +
                         "AND productDescription = '"+productDescription+"'");
                 company.next();
-                ID = company.getInt("id");
+                companyID = company.getInt("id");
             }
             else {
                 stmt.executeUpdate("UPDATE companies SET " +
@@ -655,15 +606,15 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
                         "room = '" + room + "', " +
                         "productDescription = '" + productDescription + "'," +
                         "jobs = " + jobs +
-                        " WHERE id = "+ID);
+                        " WHERE id = "+companyID);
             }
 
             //remove all employees this company previously had
             stmt.executeUpdate("UPDATE citizens SET companyId = -1, isBoss =" +
-                    " 0, salary = 0 WHERE companyId = "+ID);
+                    " 0, salary = 0 WHERE companyId = "+companyID);
 
             //add employees it has now
-            stmt.executeUpdate("UPDATE citizens SET companyId = "+ID+"," +
+            stmt.executeUpdate("UPDATE citizens SET companyId = "+companyID+"," +
                     " isBoss = 1, salary = "+boss.getSalary()+" WHERE id = "
                     +boss.getID());
 
@@ -676,7 +627,7 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
                 int emplID = Integer.parseInt(descr.split("\\|")[0].trim());
                 double salary = Double.parseDouble(descr.split("\\|")[2].trim());
 
-                stmt.executeUpdate("UPDATE citizens SET companyId = "+ID+", " +
+                stmt.executeUpdate("UPDATE citizens SET companyId = "+companyID+", " +
                         "salary = "+salary+", " +
                         "isBoss = 0" +
                         "WHERE id = "+emplID);
