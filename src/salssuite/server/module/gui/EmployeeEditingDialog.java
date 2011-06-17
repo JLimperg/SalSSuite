@@ -187,7 +187,7 @@ public class EmployeeEditingDialog extends javax.swing.JDialog {
 
         try {
             ID = Integer.parseInt(IDInput.getText());
-            salary = Double.parseDouble(salaryInput.getText());
+            salary = Double.parseDouble(salaryInput.getText().replaceAll(",", "."));
 
             if(ID <= 0 || salary < 0)
                 throw new NumberFormatException();

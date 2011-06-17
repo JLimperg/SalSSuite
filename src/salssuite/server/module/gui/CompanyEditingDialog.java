@@ -403,7 +403,7 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
 
         //test if he happens to be the founder
         Employee founder = parseFounder();
-        if(founder.getID() == newEmpl.getID()) {
+        if(founder != null && founder.getID() == newEmpl.getID()) {
             JOptionPane.showMessageDialog(parent, "Neuer Angestellter darf " +
                     "nicht der Gründer sein.", "Eingabefehler",
                     JOptionPane.ERROR_MESSAGE);
@@ -656,9 +656,12 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
         //get his ID and salary
         try {
             ID = Integer.parseInt(founderIDInput.getText());
-            salary = Double.parseDouble(founderSalaryInput.getText());
+            salary = Double.parseDouble(founderSalaryInput.getText().replaceAll(",", "."));
         }
         catch(NumberFormatException e){
+            JOptionPane.showMessageDialog(this, "Bitte gültige Werte in die Felder"
+                    + " für die ID und den Lohn des Gründers eingeben.",
+                    "Eingabefehler", JOptionPane.ERROR_MESSAGE);
             return null;
         }
 

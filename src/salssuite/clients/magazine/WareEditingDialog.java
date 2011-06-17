@@ -287,7 +287,7 @@ public class WareEditingDialog extends javax.swing.JDialog {
 
         //parse values
         try {
-            packageSize = Double.parseDouble(packageSizeInput.getText());
+            packageSize = Double.parseDouble(packageSizeInput.getText().replaceAll(",", "."));
             piecesAvailable = Integer.parseInt(piecesAvailableInput.getText());
 
             if(packageSize <= 0 || piecesAvailable < 0)
@@ -302,8 +302,8 @@ public class WareEditingDialog extends javax.swing.JDialog {
         }
 
         try {
-            realPrice = Double.parseDouble(realPriceInput.getText());
-            fictivePrice = Double.parseDouble(fictivePriceInput.getText());
+            realPrice = Double.parseDouble(realPriceInput.getText().replaceAll(",", "."));
+            fictivePrice = Double.parseDouble(fictivePriceInput.getText().replaceAll(",", "."));
 
             if(realPrice < 0 || fictivePrice < 0)
                 throw new NumberFormatException();

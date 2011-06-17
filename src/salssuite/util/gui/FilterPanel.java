@@ -394,7 +394,7 @@ public class FilterPanel extends javax.swing.JPanel{
             //add number field
             if(fieldTypes.get(fieldName) == NUMBER_FIELD) {
                 try {
-                    Double.parseDouble(input1);
+                    Double.parseDouble(input1.replaceAll(",", "."));
                 }
                 catch(NumberFormatException e) {
                     JOptionPane.showMessageDialog(parent, "In einem Zahlenfeld" +
