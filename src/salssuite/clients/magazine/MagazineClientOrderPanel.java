@@ -358,8 +358,17 @@ public class MagazineClientOrderPanel extends javax.swing.JPanel {
         if(chosenWareID < 0 || pieces <= 0)
             return;
 
-        //add visual representation
         try {
+            //Check if ware is already in the list. If so, add the amount to be bought.
+            boolean wareAlreadyInList = false;
+            ResultSet orderPart = stmt.executeQuery("SELECT pieces FROM orderParts"
+                    + " WHERE orderId = "+orderID+" AND wareId = "+chosenWareID);
+            if(orderPart.next()) {
+                pieces += orderPart.getInt("pieces");
+                wareAlreadyInList = true;
+            }
+
+            //add visual representation
             ResultSet ware = stmt.executeQuery("SELECT (name) FROM goods WHERE" +
                     " id = "+chosenWareID);
             ware.next();
@@ -369,7 +378,19 @@ public class MagazineClientOrderPanel extends javax.swing.JPanel {
             wareEntry += ware.getString("name") +" // ";
             wareEntry += pieces;
 
-            wareListModel.addElement(wareEntry);
+            if(!wareAlreadyInList)
+                wareListModel.addElement(wareEntry);
+            else {
+                for(int ct = 0; ct < wareListModel.getSize(); ct ++) {
+                    int wareID = Integer.parseInt(((String)
+                            wareListModel.getElementAt(ct)).split(" // ")[0]);
+                    if(wareID == chosenWareID) {
+                        int index = wareListModel.indexOf(wareListModel.getElementAt(ct));
+                        wareListModel.removeElementAt(index);
+                        wareListModel.insertElementAt(wareEntry, index);
+                    }
+                }
+            }
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(client, "Fehler bei der" +
