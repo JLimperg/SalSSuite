@@ -207,6 +207,16 @@ public class WareChooserDialog extends javax.swing.JDialog {
             return;
         }
 
+        //check if the number of pieces is positive
+        if(pieces <= 0) {
+            JOptionPane.showMessageDialog(this, "Die Anzahl der zu bestellenden"
+                    + " Waren muss positiv sein.", "Eingabefehler",
+                    JOptionPane.ERROR_MESSAGE);
+            chosenWareID = -1;
+            pieces = -1;
+            return;
+        }
+
         //if everything went fine: dispose
         if(chosenWareID > 0 && pieces > 0) {
             dispose();
