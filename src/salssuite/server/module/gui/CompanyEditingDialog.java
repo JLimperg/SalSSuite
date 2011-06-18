@@ -450,17 +450,6 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
         String IDString = descr.split(" ")[0].trim();
         ID = Integer.parseInt(IDString);
 
-        //set database accordingly
-        try {
-            stmt.executeUpdate("UPDATE citizens SET companyId = -1 WHERE " +
-                    "id = "+ID);
-        }
-        catch(SQLException e) {
-            JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation "
-                    + "mit der Datenbank.", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
         //remove employee from the list
         listModel.removeElement(descr);
     }//GEN-LAST:event_deleteEmployee
@@ -583,8 +572,48 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
             return false;
         }
 
-        //add everything to the database
+
         try {
+            //Check if any of the employees is already employed
+            //at another company. If so, display a warning.
+            String listOfAlreadyEmployedCitizens = "";
+
+            for(int ct = 0; ct < listModel.getSize(); ct++) {
+                String descr = (String)listModel.getElementAt(ct);
+                if(descr == null)
+                    continue;
+
+                int emplID = Integer.parseInt(descr.split("\\|")[0].trim());
+
+                ResultSet citizen = stmt.executeQuery("SELECT companyId,"
+                        + " forename, surname, id FROM"
+                        + " citizens WHERE id = "+emplID);
+                citizen.next();
+                if(citizen.getInt("companyId") != companyID &&
+                        citizen.getInt("companyId") > 0) {
+                    listOfAlreadyEmployedCitizens += "<br/>" +
+                            citizen.getString("forename") + " " +
+                            citizen.getString("surname") +
+                            " (ID " + citizen.getInt("id") +
+                            ", Betrieb Nr. "+
+                            citizen.getInt("companyId") + ")";
+                }
+            }
+
+            if(listOfAlreadyEmployedCitizens.length() > 0) {
+                int option = JOptionPane.showConfirmDialog(this, "<html>Die"
+                            + " folgenden Bürger sind bereits bei einem anderen Betrieb"
+                            + " angestellt:" + listOfAlreadyEmployedCitizens
+                            + " <br/>Wenn Sie sie bei diesem Betrieb anstellen,"
+                            + " werden sie ihre anderen Stellen verlieren.<br/>Fortfahren?",
+                            "Bestätigen", JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE);
+                if(option != JOptionPane.YES_OPTION)
+                    return false;
+            }
+            
+
+            //add everything to the database
             if(companyID < 0) { //meaning a new company should be created
                 stmt.executeUpdate("INSERT INTO companies (name, room," +
                         "productDescription, jobs) VALUES (" +
@@ -665,23 +694,36 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
             return null;
         }
 
-        //get name if possible
-
         try {
+            //get name if possible
             ResultSet boss = stmt.executeQuery("SELECT forename, surname," +
-                    " form FROM citizens WHERE id = "+ID);
+                    " form,companyId FROM citizens WHERE id = "+ID);
 
             if(!boss.next()) {
                 JOptionPane.showMessageDialog(this, "Angegebener " +
-                "Betriebsgründer nicht gefunden.", "Ungültige Eingabe",
-                JOptionPane.ERROR_MESSAGE);
+                    "Betriebsgründer nicht gefunden.", "Ungültige Eingabe",
+                    JOptionPane.ERROR_MESSAGE);
                 return null;
             }
-            else {
+            else
                 founder = new Employee(ID, boss.getString("forename"),
                         boss.getString("surname"), boss.getString("form"), salary);
-                return founder;
+
+            //Check if the founder is already employed at another company.
+            //If so, display a warning.
+            if(boss.getInt("companyId") != companyID && boss.getInt("companyId") > 0) {
+                int option = JOptionPane.showConfirmDialog(this, "<html>Der"
+                        + " gewählte Gründer ist bereits bei einem anderen Betrieb"
+                        + " angestellt.<br/>Wenn Sie ihn bei diesem Betrieb anstellen,"
+                        + " wird er seine andere Stelle verlieren.<br/>Fortfahren?"
+                        + "</html>",
+                        "Bestätigen", JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+                if(option != JOptionPane.YES_OPTION)
+                    return null;
             }
+
+            return founder;
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation "
