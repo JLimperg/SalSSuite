@@ -8,12 +8,19 @@ package salssuite.clients.magazine;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import salssuite.util.gui.FilterPanel;
+import salssuite.util.gui.ProgressDialog;
 
 /**
  * Panel to manage the list of wares available at the magazine. Provides direct
@@ -98,6 +105,7 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
         newWareButton = new javax.swing.JButton();
         editWareButton = new javax.swing.JButton();
         deleteWareButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(730, 630));
 
@@ -170,6 +178,14 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
             }
         });
 
+        jButton1.setText("Warenliste erstellen");
+        jButton1.setToolTipText("Speichert eine Warenliste im CSV-Format.");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateWareList(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -182,7 +198,9 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
                 .addComponent(editWareButton)
                 .addGap(18, 18, 18)
                 .addComponent(deleteWareButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 251, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 81, Short.MAX_VALUE)
+                .addComponent(jButton1)
+                .addGap(18, 18, 18)
                 .addComponent(refreshButton)
                 .addContainerGap())
             .addComponent(filterPanelPlaceholder, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -198,7 +216,8 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
                     .addComponent(newWareButton)
                     .addComponent(editWareButton)
                     .addComponent(deleteWareButton)
-                    .addComponent(refreshButton))
+                    .addComponent(refreshButton)
+                    .addComponent(jButton1))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -267,11 +286,80 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
         filterPanel.clearFilters();
     }//GEN-LAST:event_deleteWare
 
+    private void generateWareList(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateWareList
+
+        //ask the user for a file in which to store the list
+        File destFile;
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Csv-Dateien",
+                "csv"));
+        fileChooser.setDialogTitle("Betriebsliste speichern");
+        int option = fileChooser.showSaveDialog(getTopLevelAncestor());
+        if(option != JFileChooser.APPROVE_OPTION)
+            return;
+        destFile = fileChooser.getSelectedFile();
+
+        //open the file and print the header
+        PrintWriter out;
+        try {
+            out = new PrintWriter(new java.io.FileWriter(destFile));
+            out.println("\"Nummer\",\"Bezeichnung\",\"Einheit\",\"Preis (Staat)\","
+                    + "\"Preis (€)\",\"Händler\"");
+            out.flush();
+        }
+        catch(IOException e) {
+            JOptionPane.showMessageDialog(getTopLevelAncestor(), "Konnte gewählte"
+                    + "Datei nicht öffnen.", "Dateifehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
+
+        //print the data
+        try {
+            ProgressDialog dia = ProgressDialog.showProgressDialog(
+                    (java.awt.Frame)getTopLevelAncestor(),
+                    false, JDialog.DISPOSE_ON_CLOSE, true, "Schreibe Daten...");
+
+            ResultSet data = stmt.executeQuery("SELECT id, name, packageSize,"
+                    + "packageName, packageUnit, seller, realPrice, fictivePrice"
+                    + " FROM goods");
+            
+            while(data.next()) {
+                String line = "";
+                line += data.getString("id") + ",\"";
+                line += data.getString("name") + "\",\"";
+                line += data.getString("packageName") + " (" +
+                        data.getString("packageSize") + " " +
+                        data.getString("packageUnit") + ")\",";
+                line += data.getString("fictivePrice") + ",";
+                line += data.getString("realPrice") + ",\"";
+                line += data.getString("seller") + "\"";
+                out.println(line);
+            }
+
+            dia.dispose();
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(getTopLevelAncestor(), "Datenbankfehler"
+                    + "beim Schreiben der Daten.", "Dateifehler",
+                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
+
+        //flush and close
+        out.flush();
+        out.close();
+    }//GEN-LAST:event_generateWareList
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton deleteWareButton;
     private javax.swing.JButton editWareButton;
     private javax.swing.JPanel filterPanelPlaceholder;
+    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton newWareButton;
     private javax.swing.JButton refreshButton;
@@ -323,8 +411,8 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
                 columnData[0]=wares.getInt("id");
                 columnData[1]=wares.getString("name");
                 columnData[2]=wares.getString("packageName")+" ("+
-                        wares.getString("packageSize")+wares.getString("packageUnit")
-                        +")";
+                        wares.getString("packageSize")+ " " +
+                        wares.getString("packageUnit") +")";
                 columnData[3]=wares.getInt("available");
                 columnData[4]=computeOrderedAmount(wares.getInt("id"));
                 columnData[5]=wares.getDouble("fictivePrice");
