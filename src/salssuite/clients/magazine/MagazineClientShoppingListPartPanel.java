@@ -179,11 +179,7 @@ public class MagazineClientShoppingListPartPanel extends javax.swing.JPanel {
         requiredAmountDisplay.setText(""+(reqAmount-boughtAmount));
 
         //remove this panel from the list if the user has bought more units than
-        //are required
-        //DEBUG
-        System.out.println("Required amount: "+reqAmount);
-        System.out.println("Bought amount: "+boughtAmount);
-        
+        //are required        
         if(reqAmount - boughtAmount <= 0) {
             Container parentPanel = getParent();
             parentPanel.remove(this);

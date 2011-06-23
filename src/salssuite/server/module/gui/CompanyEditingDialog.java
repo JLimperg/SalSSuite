@@ -445,11 +445,6 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
             return;
         }
 
-        //get ID
-        int ID;
-        String IDString = descr.split(" ")[0].trim();
-        ID = Integer.parseInt(IDString);
-
         //remove employee from the list
         listModel.removeElement(descr);
     }//GEN-LAST:event_deleteEmployee

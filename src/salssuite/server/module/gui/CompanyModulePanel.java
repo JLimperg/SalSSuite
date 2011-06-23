@@ -91,7 +91,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         filterDummyPanel.add(filterPanel, BorderLayout.CENTER);
 
         //update the list
-        updateTableModel();
+        filterPanel.clearFilters();
         if(parent != null)
             parent.pack();
         validate();

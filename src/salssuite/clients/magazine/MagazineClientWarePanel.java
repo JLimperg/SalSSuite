@@ -13,7 +13,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import salssuite.util.Util;
 import salssuite.util.gui.FilterPanel;
 
 /**
