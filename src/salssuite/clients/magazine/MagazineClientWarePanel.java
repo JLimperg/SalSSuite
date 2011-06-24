@@ -19,6 +19,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import salssuite.util.Util;
 import salssuite.util.gui.FilterPanel;
 import salssuite.util.gui.ProgressDialog;
 
@@ -228,11 +229,29 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
 
     private void createNewWare(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createNewWare
         //show dialog to create new ware
-        WareEditingDialog.showWareEditingDialog(client, true,
+        int option = WareEditingDialog.showWareEditingDialog(client,
                 client.getDatabaseConnection(), -1);
 
-        //update table model  
-        filterPanel.clearFilters();
+        //if the user has cancelled:
+        if(option < 0)
+            return;
+
+        //if not, update table model
+        try {
+            ResultSet newWare = stmt.executeQuery("SELECT * FROM goods"
+                    + " WHERE ID = (SELECT MAX(ID) FROM goods)");
+            newWare.next();
+            tableModel.addRow(buildTableRowData(newWare));
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
+
+        //scroll down to the new ware
+        table.changeSelection(table.getRowCount()-1, 0, false, false);
     }//GEN-LAST:event_createNewWare
 
     private void editWare(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editWare
@@ -244,10 +263,26 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
         int ID = (Integer)tableModel.getValueAt(row, 0);
 
         //let user edit ware
-        WareEditingDialog.showWareEditingDialog(client, true,
+        WareEditingDialog.showWareEditingDialog(client,
                 client.getDatabaseConnection(), ID);
 
-        filterPanel.clearFilters();
+        //Note that the WareEditingClient automatically checks if the
+        //ware has been changed by another user.
+
+        //update table model
+        try {
+            ResultSet editedWare = stmt.executeQuery("SELECT * FROM goods"
+                    + " WHERE ID = "+ID);
+            editedWare.next();
+            tableModel.removeRow(row);
+            tableModel.insertRow(row, buildTableRowData(editedWare));
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
     }//GEN-LAST:event_editWare
 
     private void deleteWare(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteWare
@@ -260,6 +295,29 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
         int ID = (Integer)tableModel.getValueAt(row, 0);
         
         try {
+            //Check whether this row has been altered by another user in the meantime;
+            //if so: refute to remove and refresh the data.
+            ResultSet ware = stmt.executeQuery("SELECT * FROM goods WHERE"
+                    + " id = "+ID);
+            if(!ware.next()) {
+                JOptionPane.showMessageDialog(getTopLevelAncestor(), "Die Ware wurde bereits"
+                        + " von einem anderen Nutzer gelöscht.", "Information",
+                        JOptionPane.INFORMATION_MESSAGE);
+                tableModel.removeRow(row);
+                return;
+            }
+
+            if(hasTableDataChanged(row)) {
+                JOptionPane.showMessageDialog(getTopLevelAncestor(), "<html>Die Ware"
+                        + " wurde zwischenzeitlich von einem anderen Nutzer"
+                        + " geändert.<br/> Aktualisiere die Daten...</html>",
+                        "Warnung",
+                        JOptionPane.WARNING_MESSAGE);
+                filterPanel.clearFilters();
+                table.changeSelection(row, 0, false, false);
+                return;
+            }
+
             //check whether it is ordered; if so: refute to remove
             ResultSet orderedWare = stmt.executeQuery("SELECT (orderId) FROM " +
                     "orderParts WHERE wareId = "+ID);
@@ -273,6 +331,8 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
 
             //if not: remove it
             stmt.executeUpdate("DELETE FROM goods WHERE id = "+ID);
+            //and update the table model
+            tableModel.removeRow(row);
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation" +
@@ -280,10 +340,6 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
             e.printStackTrace();
             return;
         }
-
-        
-        
-        filterPanel.clearFilters();
     }//GEN-LAST:event_deleteWare
 
     private void generateWareList(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateWareList
@@ -404,22 +460,9 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
 
 
         //construct new model
-        Object[] columnData = new Object[10];
-
         try {
-            while(wares.next()) {
-                columnData[0]=wares.getInt("id");
-                columnData[1]=wares.getString("name");
-                columnData[2]=wares.getString("packageName")+" ("+
-                        wares.getString("packageSize")+ " " +
-                        wares.getString("packageUnit") +")";
-                columnData[3]=wares.getInt("available");
-                columnData[4]=computeOrderedAmount(wares.getInt("id"));
-                columnData[5]=wares.getDouble("fictivePrice");
-                columnData[6]=wares.getDouble("realPrice");
-                columnData[7]=wares.getString("seller");
-                tableModel.addRow(columnData);
-            }
+            while(wares.next())
+                tableModel.addRow(buildTableRowData(wares));
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation" +
@@ -427,6 +470,62 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
             e.printStackTrace();
             return;
         }
+    }
+
+    /**
+     * Returns an array of Objects that can be used as one row for the table.
+     * @param ware A ResultSet containing cell values for all column of one
+     * row of the database table 'goods'. The cursor must point at the row for
+     * which a table representation should be built.
+     * @return An array of Objects to be used as data for the corresponding table
+     * row.
+     * @throws SQLException if some error occurs while accessing the ResultSet.
+     */
+    private Object[] buildTableRowData(ResultSet ware) throws SQLException {
+        Object[] rowData = new Object[10];
+        rowData[0]=ware.getInt("id");
+        rowData[1]=ware.getString("name");
+        rowData[2]=ware.getString("packageName")+" ("+
+                ware.getString("packageSize")+ " " +
+                ware.getString("packageUnit") +")";
+        rowData[3]=ware.getInt("available");
+        rowData[4]=computeOrderedAmount(ware.getInt("id"));
+        rowData[5]=ware.getDouble("fictivePrice");
+        rowData[6]=ware.getDouble("realPrice");
+        rowData[7]=ware.getString("seller");
+        return rowData;
+    }
+
+    /**
+     * Determines if a certain row of the table matches its corresponding
+     * database table row.
+     * @param row The row to be checked.
+     * @throws SQLException if an error occurs while reading the database.
+     * @return true if all values of the table's row match their corresponding
+     * values in the database table; false otherwise.
+     */
+    private boolean hasTableDataChanged(int row)
+        throws SQLException {
+
+        Object[] rowData = Util.getTableRow(tableModel, row);
+        ResultSet ware = stmt.executeQuery("SELECT * FROM goods WHERE ID = "
+                + rowData[0]);
+        ware.next();
+
+        if(
+            (Integer)rowData[0] == ware.getInt("id") &&
+            ((String)rowData[1]).equals(ware.getString("name")) &&
+            ((String)rowData[2]).equals(ware.getString("packageName")+" ("+
+                ware.getString("packageSize")+ " " +
+                ware.getString("packageUnit") +")") &&
+            (Integer)rowData[3] == ware.getInt("available") &&
+            (Double)rowData[5] == ware.getDouble("fictivePrice") &&
+            (Double)rowData[6] == ware.getDouble("realPrice") &&
+            ((String)rowData[7]).equals(ware.getString("seller"))
+          )
+            return false;
+        else
+            return true;
     }
 
     /**
@@ -439,12 +538,13 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
         int orderedAmount = 0;
 
         Statement stmt2 = client.getDatabaseConnection().createStatement();
+        Statement stmt3 = client.getDatabaseConnection().createStatement();
 
-        ResultSet orders = stmt.executeQuery("SELECT pieces, orderId FROM " +
+        ResultSet orders = stmt2.executeQuery("SELECT pieces, orderId FROM " +
                 "orderParts WHERE wareId = "+wareID);
         
         while(orders.next()) {
-            ResultSet order = stmt2.executeQuery("SELECT processed FROM orders WHERE " +
+            ResultSet order = stmt3.executeQuery("SELECT processed FROM orders WHERE " +
                     "id = "+orders.getInt("orderId"));
             order.next();
             if(order.getInt("processed") == 0)

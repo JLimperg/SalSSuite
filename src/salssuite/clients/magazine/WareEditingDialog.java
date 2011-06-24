@@ -20,6 +20,9 @@ import salssuite.util.Util;
  * <p>
  * Note that the dialog does all communication with the database itself, so
  * you can just display it and wait for its disposal.
+ * <p>
+ * This dialog also alerts the user when they attempt to edit a ware that
+ * has been edited by another user since the former brought up this client.
  * @author Jannis Limperg
  * @see salssuite.server.module.MagazineModule#buildDatabase
  * @see salssuite.server.module.MagazineModule
@@ -59,18 +62,7 @@ public class WareEditingDialog extends javax.swing.JDialog {
             //set field values if an existing ware should be modified
             else {
                 createNew = false;
-                ResultSet ware = stmt.executeQuery("SELECT * FROM goods WHERE" +
-                        " id = "+wareID);
-                ware.next();
-
-                nameInput.setText(ware.getString("name"));
-                sellerInput.setText(ware.getString("seller"));
-                realPriceInput.setText(""+ware.getDouble("realPrice"));
-                fictivePriceInput.setText(""+ware.getDouble("fictivePrice"));
-                packageDescriptionInput.setText(ware.getString("packageName"));
-                packageSizeInput.setText(""+ware.getDouble("packageSize"));
-                packageUnitInput.setText(ware.getString("packageUnit"));
-                piecesAvailableInput.setText(""+ware.getInt("available"));
+                setFieldsAccordingToDatabase();
             }
         }
         catch(SQLException e) {
@@ -343,8 +335,41 @@ public class WareEditingDialog extends javax.swing.JDialog {
                 insert += piecesAvailable + ")";
 
                 stmt.executeUpdate(insert);
+                wareID = 0;
             }
             else {
+                //Check if the ware has been deleted in the meantime
+                ResultSet ware = stmt.executeQuery("SELECT * FROM goods"
+                        + " WHERE id = "+wareID);
+                if(!ware.next()) {
+                    JOptionPane.showMessageDialog(parent, "<html>Die gewählte Ware"
+                            + " existiert nicht.<br/>Möglicherweise wurde"
+                            + " sie von einem anderen Nutzer gelöscht.</html>",
+                            "Fehler", JOptionPane.ERROR_MESSAGE);
+                    dispose();
+                    return;
+                }
+
+                //Check if it has been altered in the meantime
+                if(!(
+                    ware.getString("name").equals(originalName) &&
+                    ware.getString("seller").equals(originalSeller) &&
+                    ware.getDouble("realPrice") == originalRealPrice &&
+                    ware.getDouble("fictivePrice") == originalFictivePrice &&
+                    ware.getString("packageName").equals(originalPackageName) &&
+                    ware.getString("packageUnit").equals(originalPackageUnit) &&
+                    ware.getDouble("packageSize") == originalPackageSize &&
+                    ware.getInt("available") == originalAvailable
+                  )) {
+                    JOptionPane.showMessageDialog(parent, "<html>Die Ware wurde"
+                            + " zwischenzeitlich von einem anderen Nutzer"
+                            + " bearbeitet.<br/> Aktualisiere die Daten...</html>",
+                            "Warnung", JOptionPane.WARNING_MESSAGE);
+                    setFieldsAccordingToDatabase();
+                    return;
+                }
+
+                //If not, update the database
                 String update = "UPDATE goods SET";
 
                 update += " name = " +  "'" +name + "'";
@@ -413,9 +438,59 @@ public class WareEditingDialog extends javax.swing.JDialog {
     Statement stmt;
     java.awt.Frame parent;
 
+    //The following fields are used to check if some other user has
+    //changed the ware this dialog operates on while this dialog was open.
+    String originalName = null;
+    String originalSeller = null;
+    double originalRealPrice = 0;
+    double originalFictivePrice = 0;
+    int originalAvailable = 0;
+    String originalPackageName = null;
+    String originalPackageUnit = null;
+    double originalPackageSize = 0;
+
+
     //============================CONSTRUCTORS================================//
 
     //==============================METHODS===================================//
+
+    /**
+     * Synchronises this client's input fields with values from the database.
+     * Also sets the originalXXX fields accordingly.
+     * @throws SQLException if an error occurs while communicating with the
+     * database.
+     */
+    private void setFieldsAccordingToDatabase() throws SQLException {
+        ResultSet ware = stmt.executeQuery("SELECT * FROM goods WHERE id = "+wareID);
+
+        //Check if the ware has been deleted in the meantime
+        if(!ware.next()) {
+            JOptionPane.showMessageDialog(parent, "<html>Die gewählte Ware"
+                    + " existiert nicht.<br/>Möglicherweise wurde"
+                    + " sie von einem anderen Nutzer gelöscht.</html>",
+                    "Fehler", JOptionPane.ERROR_MESSAGE);
+            dispose();
+            return;
+        }
+
+        //if not, set the fields
+        nameInput.setText(ware.getString("name"));
+        originalName = ware.getString("name");
+        sellerInput.setText(ware.getString("seller"));
+        originalSeller = ware.getString("seller");
+        realPriceInput.setText(""+ware.getDouble("realPrice"));
+        originalRealPrice = ware.getDouble("realPrice");
+        fictivePriceInput.setText(""+ware.getDouble("fictivePrice"));
+        originalFictivePrice = ware.getDouble("fictivePrice");
+        packageDescriptionInput.setText(ware.getString("packageName"));
+        originalPackageName = ware.getString("packageName");
+        packageSizeInput.setText(""+ware.getDouble("packageSize"));
+        originalPackageSize = ware.getDouble("packageSize");
+        packageUnitInput.setText(ware.getString("packageUnit"));
+        originalPackageUnit = ware.getString("packageUnit");
+        piecesAvailableInput.setText(""+ware.getInt("available"));
+        originalAvailable = ware.getInt("available");
+    }
 
     /**
      * Returns the ID of the ware this dialog operates on.
@@ -426,20 +501,29 @@ public class WareEditingDialog extends javax.swing.JDialog {
     }
 
     /**
-     * Shows a <code>WareEditingDialog</code>.
+     * Shows a modal <code>WareEditingDialog</code>.
      * @param parent The dialog's parent frame.
-     * @param modal Whether the dialog should be modal or not.
      * @param databaseConnection A connection to the database holding the
      * 'goods' table.
      * @param wareID The ware which should be modified. If a new ware should be
      * created, pass <code>-1</code> here.
+     * @return Let the returned value be <code>ID</code>, then the following
+     * applies:<br/>
+     * <ul>
+     * <li>If <code>ID</code> is greater than zero, it is the ID of the
+     * ware which has been edited.</li>
+     * <li>If <code>ID</code> is zero, this means that a new ware has been created.</li>
+     * <li>If <code>ID</code> is less than zero, this means that the user has
+     * cancelled.</li>
+     * </ul>
      * @see salssuite.server.module.MagazineModule#buildDatabase
      */
-    public static void showWareEditingDialog(java.awt.Frame parent, boolean modal,
+    public static int showWareEditingDialog(java.awt.Frame parent,
             Connection databaseConnection, int wareID) {
-        WareEditingDialog dia = new WareEditingDialog(parent, modal,
+        WareEditingDialog dia = new WareEditingDialog(parent, true,
                 databaseConnection, wareID);
         dia.setVisible(true);
+        return dia.getWareID();
     }
 
     //============================INNER CLASSES===============================//
