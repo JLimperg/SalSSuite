@@ -9,6 +9,7 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.Scanner;
 import javax.swing.JOptionPane;
+import javax.swing.table.TableModel;
 
 /**
  * Provides general utility methods.
@@ -37,8 +38,26 @@ public class Util {
     //==============================METHODS===================================//
 
     /**
+     * Returns all cell values of a given table row ordered by their column
+     * indexes.
+     * @param tableModel The <code>TableModel</code> from which the cell values should
+     * be read.
+     * @param row Index of the row that should be processed.
+     * @return An array of <code>Object</code>s, where each index corresponds
+     * to the <code>tableModel</code>'s column index and each value is the
+     * corresponding cell value.
+     */
+    public static Object[] getTableRow(TableModel tableModel, int row) {
+        int columnCount = tableModel.getColumnCount();
+        Object[] rowData = new Object[columnCount];
+        for(int ct = 0; ct < columnCount; ct++)
+            rowData[ct] = tableModel.getValueAt(row, ct);
+        return rowData;
+    }
+
+    /**
      * Tests if user input contains forbidden characters. The list of forbidden
-     * characters is defined by {link Constants#FORBIDDEN_CHARACTERS}.
+     * characters is defined by {@link Constants#FORBIDDEN_CHARACTERS}.
      *
      * This method automatically displays a message to the user informing the
      * of the fact that certain characters in their input are forbidden.
