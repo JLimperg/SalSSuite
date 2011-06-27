@@ -46,36 +46,8 @@ For testing purpose there is also a target to clean everything:
 <property name="target_jars_dir" location="dist" />
 <property name="target_javadoc_dir" location="dist/javadoc" />
 
-<!-- temporary files and directories -->
-
-<property name="temporary_classes_dir" location="tmp" />
-
 
                             <!-- TARGETS -->
-
-<!-- Move all the needed files to one directoy. This is mostly done for convenience. -->
-
-<target name="movetoonedir"
-    description="Moves all the needed class files to one directory to make bundling easier">
-
-    <mkdir dir="${temporary_classes_dir}" />
-    <mkdir dir="${target_jars_dir}" />
-
-    <!-- Move class files from NetBeans folder to tmp folder -->
-    <copy todir="${temporary_classes_dir}">
-        <fileset dir="${source_classes_dir}" />
-    </copy>
-    
-    <!-- Move derby jar files to tmp folder -->
-    <copy todir="${temporary_classes_dir}">
-        <fileset dir="${source_derby_dir}" />
-    </copy>
-    
-    <!-- Move Markdownj files to tmp folder -->
-    <copy todir="${temporary_classes_dir}">
-        <fileset dir="${source_markdownj_dir}" />
-    </copy>
-</target>
 
                             <!-- JAR TARGETS -->
 
@@ -89,125 +61,126 @@ For testing purpose there is also a target to clean everything:
 
 <!-- Single targets for creating jar files -->
 
-<target name="jarinstaller" depends="movetoonedir"
+<target name="jarinstaller"
     description="Bundles all relevant classes to one installer jar file">
     <jar destfile="${target_jars_dir}/Installer.jar"
-        basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+        basedir="${source_classes_dir}" excludes="*.jar, *.war" >
         <manifest>
             <attribute name="Main-Class" value="salssuite.util.gui.Installer" />
         </manifest>
-        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />      
+        <zipfileset src="${source_markdownj_dir}/markdownj.jar" />      
     </jar>
     <chmod file="${target_jars_dir}/Installer.jar" perm="a+x" />
 </target>
 
-<target name="jaruninstaller" depends="movetoonedir"
+<target name="jaruninstaller"
     description="Bundles all relevant classes to one uninstaller jar file">
     <jar destfile="${target_jars_dir}/Uninstaller.jar"
-        basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+        basedir="${source_classes_dir}" excludes="*.jar, *.war" >
         <manifest>
             <attribute name="Main-Class" value="salssuite.util.gui.Uninstaller" />
         </manifest>
-        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />     
+        <zipfileset src="${source_markdownj_dir}/markdownj.jar" />     
     </jar>
     <chmod file="${target_jars_dir}/Uninstaller.jar" perm="a+x" />
 </target>
 
-<target name="jarserver" depends="movetoonedir"
+<target name="jarserver"
     description="Bundles all relevant classes to one server jar file">
     <jar destfile="${target_jars_dir}/Server.jar"
-    basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+    basedir="${source_classes_dir}" excludes="*.jar, *.war" >
         <manifest>
             <attribute name="Main-Class" value="salssuite.server.ServerLauncher" />
         </manifest>
-        <zipfileset src="${temporary_classes_dir}/derby.jar" />
-        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
-        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
-        <zipfileset src="${temporary_classes_dir}/derbynet.jar" />
-        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
+        <zipfileset src="${source_derby_dir}/derby.jar" />
+        <zipfileset src="${source_derby_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${source_derby_dir}/derbyclient.jar" />
+        <zipfileset src="${source_derby_dir}/derbynet.jar" />
+        <zipfileset src="${source_markdownj_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Server.jar" perm="a+x" />
 </target>
 
-<target name="jardutyclient" depends="movetoonedir"
+<target name="jardutyclient"
     description="Bundles all relevant classes to one duty client jar file">
     <jar destfile="${target_jars_dir}/Zollclient.jar" 
-    basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+    basedir="${source_classes_dir}" excludes="*.jar, *.war" >
         <manifest>
             <attribute name="Main-Class" value="salssuite.clients.duty.DutyClient" />
         </manifest>
-        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
-        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
-        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
+        <zipfileset src="${source_derby_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${source_derby_dir}/derbyclient.jar" />
+        <zipfileset src="${source_markdownj_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Zollclient.jar" perm="a+x" />
 </target>
 
-<target name="jarmagazineclient" depends="movetoonedir"
+<target name="jarmagazineclient"
     description="Bundles all relevant classes to one magazine client jar file">
     <jar destfile="${target_jars_dir}/Warenlagerclient.jar"
-    basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+    basedir="${source_classes_dir}" excludes="*.jar, *.war" >
         <manifest>
             <attribute name="Main-Class" value="salssuite.clients.magazine.MagazineClient" />
         </manifest>
-        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
-        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
-        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
+        <zipfileset src="${source_derby_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${source_derby_dir}/derbyclient.jar" />
+        <zipfileset src="${source_markdownj_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Warenlagerclient.jar" perm="a+x" />
 </target>
 
-<target name="jaraccountingclient" depends="movetoonedir"
+<target name="jaraccountingclient"
     description="Bundles all relevant classes to one accounting client jar file" >
     <jar destfile="${target_jars_dir}/Buchhaltungsclient.jar"
-    basedir="${temporary_classes_dir}" excludes="*.jar, *.war" >
+    basedir="${source_classes_dir}" excludes="*.jar, *.war" >
         <manifest>
             <attribute name="Main-Class" value="salssuite.clients.accounting.AccountingClient" />
         </manifest>
-        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
-        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
-        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
+        <zipfileset src="${source_derby_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${source_derby_dir}/derbyclient.jar" />
+        <zipfileset src="${source_markdownj_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Buchhaltungsclient.jar" perm="a+x" />
 </target>
 
-<target name="jaremploymentclient" depends="movetoonedir"
+<target name="jaremploymentclient"
     description="Bundles all relevant classes to one accounting client jar file" >
     <jar destfile="${target_jars_dir}/Arbeitsamtclient.jar"
-    basedir="${temporary_classes_dir}" excludes="*.jar, *.war">
+    basedir="${source_classes_dir}" excludes="*.jar, *.war">
         <manifest>
             <attribute name="Main-Class" value="salssuite.clients.employment.EmploymentClient" />
         </manifest>
-        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
-        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
-        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
+        <zipfileset src="${source_derby_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${source_derby_dir}/derbyclient.jar" />
+        <zipfileset src="${source_markdownj_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Arbeitsamtclient.jar" perm="a+x" />
 </target>
 
-<target name="jaradminclient" depends="movetoonedir"
+<target name="jaradminclient"
     description="Bundles all relevant classes to one admin client jar file" >
     <jar destfile="${target_jars_dir}/Adminclient.jar"
-    basedir="${temporary_classes_dir}" excludes="*.jar, *.war">
+    basedir="${source_classes_dir}" excludes="*.jar, *.war">
         <manifest>
             <attribute name="Main-Class" value="salssuite.clients.admin.AdminClient" />
         </manifest>
-        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
-        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
-        <zipfileset src="${temporary_classes_dir}/markdownj.jar" />
+        <zipfileset src="${source_derby_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${source_derby_dir}/derbyclient.jar" />
+        <zipfileset src="${source_markdownj_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/Adminclient.jar" perm="a+x" />
 </target>
 
-<target name="jarcreditclient" depends="movetoonedir"
+<target name="jarcreditclient"
     description="Bundles all relevant classes to one credit client jar file." >
     <jar destfile="${target_jars_dir}/KreditClient.jar"
-    basedir="${temporary_classes_dir}" excludes="*.jar, *.war">
+    basedir="${source_classes_dir}" excludes="*.jar, *.war">
         <manifest>
             <attribute name="Main-Class" value="salssuite.clients.credits.CreditClient" />
         </manifest>
-        <zipfileset src="${temporary_classes_dir}/derbyLocale_de_DE.jar" />
-        <zipfileset src="${temporary_classes_dir}/derbyclient.jar" />
+        <zipfileset src="${source_derby_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${source_derby_dir}/derbyclient.jar" />
+        <zipfileset src="${source_markdownj_dir}/markdownj.jar" />
     </jar>
     <chmod file="${target_jars_dir}/KreditClient.jar" perm="a+x" />
 </target>
@@ -217,14 +190,7 @@ For testing purpose there is also a target to clean everything:
 
 <!-- Clean -->
 
-<target name="clean" description="Removes temporary files" >
-    <delete dir="${temporary_classes_dir}"/>
-</target>
-
-<!-- Clean all (even the generated files) -->
-
-<target name="cleanall" depends="clean"
-    description="Removes all files generated by any of the targets.">
+<target name="clean" description="Removes all files generated by any of the targets." >
     <delete dir="${target_javadoc_dir}" />
     <delete dir="${target_jars_dir}" />
 </target>
@@ -256,7 +222,7 @@ For testing purpose there is also a target to clean everything:
 
 <!-- Do everything -->
 
-<target name="dist" depends="javadoc, jar, clean"
+<target name="dist" depends="javadoc, jar"
     description="Generates javadoc and builds the SalSSuite programme (without
     installing it, though).">
 </target>
