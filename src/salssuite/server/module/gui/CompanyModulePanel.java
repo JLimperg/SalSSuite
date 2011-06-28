@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -304,8 +305,8 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         PrintWriter out;
         try {
             out = new PrintWriter(new java.io.FileWriter(destFile));
-            out.println("\"Nummer\",\"Name\",\"Raum\",\"Stellen ges. (inkl. Gründer)\","
-                    + "\"Gründer\",\"Angestellte\"");
+            out.println("\"Nummer\",\"Name\",\"Produkt\",\"Raum\","
+                    + "\"Gründer\",\"Angestellte\",\"freie Stellen\"");
             out.flush();
         }
         catch(IOException e) {
@@ -318,56 +319,61 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         try {
             Statement stmt2 = dbcon.createStatement();
             ResultSet companies = stmt.executeQuery("SELECT id,name,"
-                    + "room,jobs FROM companies");
+                    + "room,jobs,productDescription FROM companies ORDER BY id");
 
             while(companies.next()) {
-                String row = "";
+                LinkedList<String> rows = new LinkedList<String>();
 
                 int ID = companies.getInt("id");
+                int employeeCount = 0;
 
                 //generate the new row
-                row += ID + ",";
-                row += "\"" + companies.getString("name").replace("\"", "'") + "\",";
-                row += "\"" + companies.getString("room").replace("\"", "'") + "\",";
-                row += companies.getInt("jobs") + ",";
+                String firstRow = "";
+                firstRow += ID + ",";
+                firstRow += "\"" + companies.getString("name").replace("\"", "'") + "\",";
+                firstRow += "\"" + companies.getString("productDescription").replace("\"", "'") + "\",";
+                firstRow += "\"" + companies.getString("room").replace("\"", "'") + "\",";
 
                 //get the founder
                 ResultSet founder = stmt2.executeQuery("SELECT forename,surname"
                         + " FROM citizens WHERE companyId = "+ID+" AND"
                         + " isBoss = 1");
                 if(founder.next()) {
+                    employeeCount ++;
                     String forename = founder.getString("forename").replace("\"", "'").
                             split(" ")[0];
                     String surname = founder.getString("surname").replace("\"", "'");
-                    row += "\"" + forename + " " + surname + "\",";
+                    firstRow += "\"" + forename + " " + surname + "\",";
                 }
                 else
-                    row += ",";
+                    firstRow += ",";
 
                 //get the employees
                 ResultSet employees = stmt2.executeQuery("SELECT forename, surname"
                         + " FROM citizens WHERE companyId = "+ID+" AND"
-                        + " isBoss = 0");
+                        + " isBoss = 0 ORDER BY surname");
                 boolean firstEmployee = true;
                 while(employees.next()) {
+                    employeeCount ++;
                     String forename = employees.getString("forename").replace("\"", "'").
                             split(" ")[0];
                     String surname = employees.getString("surname").replace("\"", "'");
                     if(firstEmployee) {
-                        row += "\"" + forename + " " + surname + "\"";
-                        out.println(row);
+                        firstRow += "\"" + forename + " " + surname + "\"";
                         firstEmployee = false;
                     }
                     else {
-                        out.println(",,,,,\"" + forename + " " + surname + "\"");
+                        rows.add(",,,,,\"" + forename + " " + surname + "\"");
                     }
                 }
 
-                //if the company has no employees nothing
-                //has been printed yet
-                if(firstEmployee) {
+                //add the number of free rows
+                firstRow += ","+(companies.getInt("jobs") - employeeCount);
+
+                //print everything
+                out.println(firstRow);
+                for(String row : rows)
                     out.println(row);
-                }
             }
 
             out.flush();
@@ -377,6 +383,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
                     + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            return;
         }
 
         //confirm generation
