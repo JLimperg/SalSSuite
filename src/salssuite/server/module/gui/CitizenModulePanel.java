@@ -277,7 +277,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Csv-Dateien",
                 "csv"));
-        fileChooser.setDialogTitle("Betriebsliste speichern");
+        fileChooser.setDialogTitle("Bürgerliste speichern");
         int option = fileChooser.showSaveDialog(getTopLevelAncestor());
         if(option != JFileChooser.APPROVE_OPTION)
             return;
@@ -299,7 +299,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
 
         //print the data
         try {
-            ResultSet data = stmt.executeQuery("SELECT * FROM citizens");
+            ResultSet data = stmt.executeQuery("SELECT * FROM citizens ORDER BY id");
             while(data.next()) {
                 String line = "";
                 line += data.getInt("id") + ",";
