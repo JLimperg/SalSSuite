@@ -258,6 +258,7 @@ public class AddCreditDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cancel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancel
+        creditID = -1;
         dispose();
     }//GEN-LAST:event_cancel
 
@@ -388,6 +389,17 @@ public class AddCreditDialog extends javax.swing.JDialog {
                     + "'" + Util.getDateString(startDay) + "',"
                     + "'" + Util.getDateString(endDay) + "',"
                     + "0)");
+
+            //Get the new credit's ID. Note that in extremely seldom cases, the
+            //following statement might return the ID of another credit which
+            //was created almost simultaneously with the one we have created.
+            //Unfortunately SQL does not provide a method to find out the new credit's
+            //ID right when creating it.
+            ResultSet creditIDQuery = stmt.executeQuery("SELECT MAX(id) "
+                    + "AS creditID FROM"
+                    + " credits");
+            if(creditIDQuery.next())
+                creditID = creditIDQuery.getInt("creditID");
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
@@ -487,10 +499,20 @@ public class AddCreditDialog extends javax.swing.JDialog {
 
     Connection dbcon;
     Statement stmt;
+    int creditID = -1;
 
     //============================CONSTRUCTORS================================//
 
     //==============================METHODS===================================//
+
+    /**
+     * If the user has successfully created a credit using this dialog, returns
+     * its ID. Otherwise returns <code>-1</code>.
+     * @return The new credit's ID, or <code>-1</code> if the user has cancelled.
+     */
+    public int getCreditID() {
+        return creditID;
+    }
 
     //============================INNER CLASSES===============================//
 }

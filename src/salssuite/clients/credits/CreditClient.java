@@ -22,6 +22,8 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -63,6 +65,18 @@ public class CreditClient extends javax.swing.JFrame {
 
         table.getColumnModel().getColumn(1).setCellEditor(new
                 BorrowerColumnCellEditor(this));
+
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent evt) {
+                try {
+                    originalRowData = Util.getTableRow(tableModel, evt.getFirstIndex());
+                }
+                catch(ArrayIndexOutOfBoundsException e) {}
+                //This exception occurs when all rows are removed from the
+                //table model, in which case we don't need the originalRowData stuff
+                //anyway.
+            }
+        });
 
         //usability
         addWindowListener(new WindowAdapter() {
@@ -142,7 +156,7 @@ public class CreditClient extends javax.swing.JFrame {
 
         filterPanel.addActionListener(new ActionListener() {
            public void actionPerformed(java.awt.event.ActionEvent ev) {
-               inputSent();
+               updateTableModel();
            }
         });
 
@@ -321,11 +335,26 @@ public class CreditClient extends javax.swing.JFrame {
     }//GEN-LAST:event_tableUpdateRequested
 
     private void newCredit(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newCredit
-        new AddCreditDialog(this, true, dbcon).setVisible(true);
-        tableUpdateRequested(null);
+        AddCreditDialog dia = new AddCreditDialog(this, true, dbcon);
+        dia.setVisible(true);
 
-        //scroll to the position of the new credit
-        table.changeSelection(tableModel.getRowCount()-1, 0, false, false);
+        //add visual representation
+        int newCreditID = dia.getCreditID();
+        if(newCreditID < -1)
+            return;
+
+        try {
+            ResultSet credit = stmt.executeQuery("SELECT * FROM credits WHERE"
+                    + " id = "+newCreditID);
+            credit.next();
+            buildTableRow(credit);
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
     }//GEN-LAST:event_newCredit
 
     private void removeCredit(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeCredit
@@ -338,6 +367,15 @@ public class CreditClient extends javax.swing.JFrame {
         for(int ct = 0; ct < rows.length; ct++)
             IDs[ct] = (Integer)tableModel.getValueAt(rows[ct], 0);
 
+        //Check if any of the credits to be removed have been edited in the
+        //meantime.
+        String editedRowsDescription = "";
+        for(int ct = 0; ct < rows.length; ct++)
+            if(hasRowChanged(Util.getTableRow(tableModel, rows[ct]))) {
+                editedRowsDescription += "<br/>Nr." + IDs[ct];
+                rows[ct] = -1;
+            }
+        
         //confirm deletion
         int option;
         if(rows.length == 1)
@@ -353,8 +391,9 @@ public class CreditClient extends javax.swing.JFrame {
 
         //update database
         try {
-            for(int ID : IDs)
-                stmt.executeUpdate("DELETE FROM credits WHERE id = "+ID);
+            for(int ct = 0; ct < rows.length; ct++)
+                if(rows[ct] >= 0)
+                    stmt.executeUpdate("DELETE FROM credits WHERE id = "+IDs[ct]);
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
@@ -364,8 +403,23 @@ public class CreditClient extends javax.swing.JFrame {
         }
 
         //remove rows from table
+        int removedRowsCount = 0;
         for(int ct = 0; ct < rows.length; ct++)
-            tableModel.removeRow(rows[ct]-ct);
+            if(rows[ct] >= 0) {
+                tableModel.removeRow(rows[ct]-removedRowsCount);
+                removedRowsCount ++;
+            }
+
+        //Print error message if another user has edited a row that should
+        //be removed.
+        if(editedRowsDescription.length() != 0) {
+            JOptionPane.showMessageDialog(this, "<html>Die folgenden Kredite"
+                    + " wurden von anderen Benutzern bearbeitet und werden"
+                    + " deshalb nicht gelöscht:" + editedRowsDescription + "<br/>"
+                    + "Aktualisiere die Daten...</html>",
+                    "Fehler", JOptionPane.ERROR_MESSAGE);
+            filterPanel.clearFilters();
+        }
     }//GEN-LAST:event_removeCredit
 
     private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
@@ -417,6 +471,27 @@ public class CreditClient extends javax.swing.JFrame {
     FilterPanel filterPanel;
     DefaultTableModel tableModel;
 
+    /**
+     * Indicates that a cell update made by the user is being processed at
+     * the moment and that therefore other cell updates made automatically in order to
+     * react to the user's cell update should not trigger the cellUpdated() method.
+     */
+    boolean cellUpdateInProgress = false;
+
+    /**
+     * This array always contains the data found in the currently selected row
+     * when this row was selected. This is useful when checking whether the
+     * row has been changed by another user in the meantime, as the database
+     * should be compared to the row's data _before_ the user has edited it,
+     * hence when it was selected.
+     * 
+     * Note that it is theoretically possible that the user edits the row
+     * incredibly fast so that this array contains the row's data _after_
+     * the user has edited it. As this is incredibly unlikely to happen, I have
+     * chosen not to prevent it (using a lock or whatever).
+     */
+    Object[] originalRowData;
+
     //============================CONSTRUCTORS================================//
 
     //==============================METHODS===================================//
@@ -425,7 +500,7 @@ public class CreditClient extends javax.swing.JFrame {
      * Updates the table model according to the filters currently applied
      * in the filter panel.
      */
-    private void inputSent() {
+    private void updateTableModel() {
         //erase all data in the table model
         tableModel.setRowCount(0);
 
@@ -434,74 +509,7 @@ public class CreditClient extends javax.swing.JFrame {
 
         try {
             while(data.next()) {
-                //if user only wants to see those credits which are not yet paid
-                if(onlyOpenFilter.isSelected() && data.getInt("paid") == 1)
-                    continue;
-
-                //set basic data
-                Object[] row = new Object[tableModel.getColumnCount()];
-                row[0] = data.getInt("ID");
-
-                int citizenID = data.getInt("citizenId");
-                int companyID = data.getInt("companyId");
-
-                if(citizenID < 0)
-                    row[1] = "Betrieb "+companyID;
-                else
-                    row[1] = "Bürger "+citizenID;
-
-                //compute current amount
-                double amount;
-                double originalAmount = data.getDouble("amount");
-                double interest = data.getDouble("interest");
-                String[] startDay = Util.parseDateString(data.getString("startDay"));
-                GregorianCalendar startDayCal = new GregorianCalendar(
-                        Integer.parseInt(startDay[0]),
-                        Integer.parseInt(startDay[1])-1,
-                        Integer.parseInt(startDay[2]));
-                String[] endDay = Util.parseDateString(data.getString("endDay"));
-                GregorianCalendar endDayCal = new GregorianCalendar(
-                        Integer.parseInt(endDay[0]),
-                        Integer.parseInt(endDay[1])-1,
-                        Integer.parseInt(endDay[2]));
-                GregorianCalendar today = new GregorianCalendar();
-
-                //if user only wants to see credits that are to be paid today or
-                //were to be paid earlier
-                if(onlyDueFilter.isSelected() && !endDayCal.before(today))
-                    return;
-
-                if(today.before(startDayCal))
-                    amount = originalAmount;
-                else if(today.after(endDayCal)) {
-                    int daysBetweenEndAndStart = 1;
-                    while(endDayCal.after(startDayCal)) {
-                        daysBetweenEndAndStart += 1;
-                        startDayCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
-                    }
-                    amount = originalAmount*Math.pow(1+interest/100, daysBetweenEndAndStart);
-                }
-                else { //current day is between startDay and endDay
-                    int daysBetweenTodayAndStart = 0;
-                    while(today.after(startDayCal)) {
-                        daysBetweenTodayAndStart += 1;
-                        startDayCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
-                    }
-                    amount = originalAmount*Math.pow(1+interest/100, daysBetweenTodayAndStart);
-                }
-
-                //set rest of data
-                row[2] = amount;
-                if(data.getInt("paid") == 0)
-                    row[3] = false;
-                else
-                    row[3] = true;
-                row[4] = originalAmount;
-                row[5] = interest;
-                row[6] = data.getString("startDay");
-                row[7] = data.getString("endDay");
-
-                tableModel.addRow(row);
+                buildTableRow(data);
             }
         }
         catch(SQLException e) {
@@ -514,6 +522,168 @@ public class CreditClient extends javax.swing.JFrame {
     }
 
     /**
+     * Adds a single row to the table which corresponds to the database row
+     * represented by rowData. Note that the cursor of rowData must point
+     * to a valid database row. This method takes into account the state
+     * of the onlyOpenFilter checkbox, so if that checkbox is selected and the
+     * credit processed here is already paid back, the method will return
+     * without having added a row to the database.
+     * @param rowData One row of the database. Must contain all columns of
+     * the 'credits' database table.
+     * @throws SQLException if some error occurs while accessing rowData.
+     */
+    private void buildTableRow(ResultSet rowData) throws SQLException {
+        //if user only wants to see those credits which are not yet paid
+        if(onlyOpenFilter.isSelected() && rowData.getInt("paid") == 1)
+            return;
+
+        //set basic data
+        Object[] row = new Object[tableModel.getColumnCount()];
+        row[0] = rowData.getInt("ID");
+
+        int citizenID = rowData.getInt("citizenId");
+        int companyID = rowData.getInt("companyId");
+
+        if(citizenID < 0)
+            row[1] = "Betrieb "+companyID;
+        else
+            row[1] = "Bürger "+citizenID;
+
+        //compute current amount
+        double originalAmount = rowData.getDouble("amount");
+        double interest = rowData.getDouble("interest");
+        String startDay = rowData.getString("startDay");
+        String endDay = rowData.getString("endDay");
+
+        double amount = computeCurrentAmount(originalAmount, interest,
+                startDay, endDay);
+
+        if(amount < 0) //indicates that this row should not be displayed
+            return;
+
+        //set rest of data
+        row[2] = amount;
+        if(rowData.getInt("paid") == 0)
+            row[3] = false;
+        else
+            row[3] = true;
+        row[4] = originalAmount;
+        row[5] = interest;
+        row[6] = rowData.getString("startDay");
+        row[7] = rowData.getString("endDay");
+
+        tableModel.addRow(row);
+    }
+
+    /**
+     * Determines, what the current amount of a credit with given data is. This
+     * is the amount that would have to be paid back today if a citizen/company
+     * would pay back their credit.
+     * @param originalAmount The amount of money that has been borrowed by the
+     * citizen or company.
+     * @param interest Interest rate per day for this credit.
+     * @param startDay String describing the day on which the money has been
+     * borrowed. Is parsed using Util.parseDateString(String).
+     * @param endDay String describing the day on which the money is to be
+     * paid back. Is parsed using Util.parseDateString(String).
+     * @return
+     */
+    private double computeCurrentAmount(double originalAmount, double interest,
+            String startDay, String endDay) {
+
+        //compute current amount
+        double amount;
+        String[] startDaySplit = Util.parseDateString(startDay);
+        GregorianCalendar startDayCal = new GregorianCalendar(
+                Integer.parseInt(startDaySplit[0]),
+                Integer.parseInt(startDaySplit[1])-1,
+                Integer.parseInt(startDaySplit[2]));
+        String[] endDaySplit = Util.parseDateString(endDay);
+        GregorianCalendar endDayCal = new GregorianCalendar(
+                Integer.parseInt(endDaySplit[0]),
+                Integer.parseInt(endDaySplit[1])-1,
+                Integer.parseInt(endDaySplit[2]));
+        GregorianCalendar today = new GregorianCalendar();
+
+        //if user only wants to see credits that are to be paid today or
+        //were to be paid earlier
+        if(onlyDueFilter.isSelected() && !endDayCal.before(today))
+            return -1;
+
+        if(today.before(startDayCal))
+            amount = originalAmount;
+        else if(today.after(endDayCal)) {
+            int daysBetweenEndAndStart = 1;
+            while(endDayCal.after(startDayCal)) {
+                daysBetweenEndAndStart += 1;
+                startDayCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
+            }
+            amount = originalAmount*Math.pow(1+interest/100, daysBetweenEndAndStart);
+        }
+        else { //current day is between startDay and endDay
+            int daysBetweenTodayAndStart = 0;
+            while(today.after(startDayCal)) {
+                daysBetweenTodayAndStart += 1;
+                startDayCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
+            }
+            amount = originalAmount*Math.pow(1+interest/100, daysBetweenTodayAndStart);
+        }
+
+        return amount;
+    }
+
+    /**
+     * Determines if the given table row has been changed by another
+     * user in the meantime. This method compares the content of the
+     * rowData array with the values stored in the database.
+     * @param rowData An array containing all cell values of the row that should
+     * be investigated for changes.
+     * @return true if the row has changed, false if not.
+     */
+    private boolean hasRowChanged(Object[] rowData) {
+        try {
+            Statement stmt2 = dbcon.createStatement();
+            ResultSet dbRow = stmt2.executeQuery("SELECT * FROM credits"
+                    + " WHERE id = "+rowData[0]);
+            if(!dbRow.next())
+                return true;
+
+            //check if company/citizen has changed
+            String citizenOrCompany = (String)rowData[1];
+            int ID = Integer.parseInt(citizenOrCompany.split(" ")[1]);
+            if((citizenOrCompany.startsWith("Bürger") && dbRow.getInt("citizenId") != ID) ||
+               (citizenOrCompany.startsWith("Betrieb") && dbRow.getInt("companyId") != ID))
+                return true;
+
+            //check if paid status has changed
+            if(((Boolean)rowData[3] == true && dbRow.getInt("paid") != 1) ||
+                ((Boolean)rowData[3] == false && dbRow.getInt("paid") != 0))
+                return true;
+
+            //check if original amount has changed
+            if((Double)rowData[4] != dbRow.getDouble("amount"))
+                return true;
+
+            //check if interest rate has changed
+            if((Double)rowData[5] != dbRow.getDouble("interest"))
+                return true;
+
+            //check if dates have changed
+            if(!rowData[6].equals(dbRow.getString("startDay")) ||
+               !rowData[7].equals(dbRow.getString("endDay")))
+                return true;
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Responds to a cell value change by the user. They may freely edit cells
      * (except for the "ID" and the "total amount" columns) to manipulate the
      * credit data. This method is called each time a cell is edited in that way
@@ -522,8 +692,24 @@ public class CreditClient extends javax.swing.JFrame {
      * @param column The edited cell's column.
      */
     private void cellUpdated(int row, int column) {
+        //check if a cell update is in progress
+        if(cellUpdateInProgress)
+            return;
+        cellUpdateInProgress = true;
+
         //get the ID of the changed credit
         int ID = (Integer)tableModel.getValueAt(row, 0);
+
+        //Check if the selected row has been edited by another user in
+        //the meantime.
+        if(hasRowChanged(originalRowData)) {
+            JOptionPane.showMessageDialog(this, "<html>Der gewählte Kredit wurde"
+                    + " zwischenzeitlich von einem anderen Nutzer bearbeitet.<br/>"
+                    + "Aktualisiere die Daten...</html>", "Fehler", JOptionPane.
+                    ERROR_MESSAGE);
+            filterPanel.clearFilters();
+            return;
+        }
 
         //get the new value
         Object newValue = tableModel.getValueAt(row, column);
@@ -575,12 +761,27 @@ public class CreditClient extends javax.swing.JFrame {
                     break global;
                 }
 
-                if(column == 4)
+                double amount;
+                double interest;
+
+                if(column == 4) {
                     stmt.executeUpdate("UPDATE credits SET amount = " +
                             amountOrInterest+" WHERE id = "+ID);
-                else
+                    amount = amountOrInterest;
+                    interest = (Double)tableModel.getValueAt(row, 5);
+                }
+                else {
                     stmt.executeUpdate("UPDATE credits SET interest = " +
                             amountOrInterest+" WHERE id = "+ID);
+                    interest = amountOrInterest;
+                    amount = (Double)tableModel.getValueAt(row, 4);
+                }
+
+                //compute current amount
+                String startDay = (String)tableModel.getValueAt(row, 6);
+                String endDay = (String)tableModel.getValueAt(row, 7);
+                tableModel.setValueAt(computeCurrentAmount(amount, interest,
+                        startDay, endDay), row, 2);
             //end case 4 | 5
             }
             else if(column == 6 || column == 7) { //columns endday and startday
@@ -609,13 +810,21 @@ public class CreditClient extends javax.swing.JFrame {
 
                 dayInputCal = new GregorianCalendar(year, month-1, day);
 
-                if(column == 6) { //we are modifying startDay
+                if(column == 6) //we are modifying startDay
                     stmt.executeUpdate("UPDATE credits SET startDay = '" +
                             Util.getDateString(dayInputCal) + "' WHERE id = "+ID);
-                }
                 else //we are modifying endDay
                     stmt.executeUpdate("UPDATE credits SET endDay = '" +
                             Util.getDateString(dayInputCal) + "' WHERE id = "+ID);
+
+                //compute current amount
+                double originalAmount = (Double)tableModel.getValueAt(row, 4);
+                double interest = (Double)tableModel.getValueAt(row, 5);
+                String startDay = (String)tableModel.getValueAt(row, 6);
+                String endDay = (String)tableModel.getValueAt(row, 7);
+
+                tableModel.setValueAt(computeCurrentAmount(originalAmount,
+                        interest, startDay, endDay), row, 2);
             }
         }
         catch(SQLException e) {
@@ -625,8 +834,8 @@ public class CreditClient extends javax.swing.JFrame {
             return;
         }
 
-        tableUpdateRequested(null);
-        table.changeSelection(row, column, false, false);
+        originalRowData = Util.getTableRow(tableModel, row);
+        cellUpdateInProgress = false;
     }
 
     //============================INNER CLASSES===============================//
@@ -775,7 +984,6 @@ public class CreditClient extends javax.swing.JFrame {
 
             table.getColumnModel().getColumn(column).setMinWidth(
                     (int)cellPanel.getPreferredSize().getWidth()
-                  //  + (int)IDInput.getPreferredSize().getWidth()
                     );
             table.setRowHeight(row,
                     (int)cellPanel.getPreferredSize().getHeight());
