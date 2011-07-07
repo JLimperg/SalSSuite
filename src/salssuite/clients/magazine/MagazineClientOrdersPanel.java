@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.TreeMap;
 import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
 import salssuite.util.gui.FilterPanel;
@@ -191,7 +190,7 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateOrders(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateOrders
-        updateOrders();
+        filterPanel.clearFilters();
     }//GEN-LAST:event_updateOrders
 
     private void newOrderButtonPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newOrderButtonPressed
@@ -227,10 +226,20 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
         } while(true);
 
         //add new order
+        int newOrderID;
         try {
             stmt.executeUpdate("INSERT INTO orders (companyId, date, time) VALUES ("+
                     companyNumber+", '"+Util.getDateString()+"', '"+
                     Util.getTimeString()+"')");
+            /*
+             * Note that it is possible that the following query does not
+             * return the ID of the order that has been created using this client,
+             * but that of an order which another user has created almost at the
+             * same moment. In this case the UI is going to be messed up, but it
+             * can be restored using the refresh button.
+             */
+            newOrderID = stmt.executeQuery("SELECT MAX(id) AS maxid FROM orders")
+                    .getInt("maxid");
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation" +
@@ -239,7 +248,14 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
             return;
         }
 
-        filterPanel.clearFilters();
+        //add panel for new order
+        MagazineClientOrderPanel panel = new MagazineClientOrderPanel(client,
+                        newOrderID, companyNumber);
+        panel.setBorder(BorderFactory.createLineBorder(java.awt.Color.BLACK, 2));
+
+        mainPanel.add(panel);
+        validate();
+        mainPanel.repaint();
 
         //ensure new order is visible
         javax.swing.JScrollBar vertScrollBar = jScrollPane1.getVerticalScrollBar();
@@ -271,9 +287,6 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
 
     //===============================FIELDS===================================//
 
-    TreeMap<Integer, MagazineClientOrderPanel> orderPanels = new TreeMap<Integer,
-            MagazineClientOrderPanel>();
-
     MagazineClient client;
     Statement stmt;
     FilterPanel filterPanel;
@@ -284,20 +297,12 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
     //==============================METHODS===================================//
 
     /**
-     * Updates the list of orders.
-     */
-    private void updateOrders() {
-        filterPanel.clearFilters();
-    }
-
-    /**
      * Updates the visual representation of the orders.
      */
     private void updateList() {
 
         //remove all order panels
         mainPanel.removeAll();
-        orderPanels = new TreeMap<Integer, MagazineClientOrderPanel>();
 
         //construct data for new orders    
         ResultSet visibleOrdersIDs = filterPanel.getFilteredData();
@@ -323,7 +328,6 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
                         orderID, companyID);
                 panel.setBorder(BorderFactory.createLineBorder(java.awt.Color.BLACK, 2));
 
-                orderPanels.put(orderID, panel);
                 mainPanel.add(panel);
             }
         }

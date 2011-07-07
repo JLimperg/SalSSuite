@@ -519,9 +519,11 @@ public class EmploymentClient extends javax.swing.JFrame {
         if(index < 0)
             return;
         int ID = Integer.parseInt((String)companyTableModel.getValueAt(index, 0));
+        int freeJobs = -1;
 
         try {
-            if(newJobsCount < getNumberOfEmployees(ID)) {
+            freeJobs = newJobsCount - getNumberOfEmployees(ID);
+            if(freeJobs < 0) {
                 updateCompanyDisplays();
                 return;
             }
@@ -537,10 +539,8 @@ public class EmploymentClient extends javax.swing.JFrame {
             return;
         }
 
-        int selectedIndex = companyTable.getSelectedRow();
-        updateCompanyTableModel();
-        companyTable.changeSelection(selectedIndex, 0, false, false);
         updateCompanyDisplays();
+        companyTableModel.setValueAt(freeJobs, index, 2);
     }//GEN-LAST:event_updateTotalJobsCount
 
     private void displayOnlyWithFreeJobsToggleItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_displayOnlyWithFreeJobsToggleItemStateChanged
@@ -929,10 +929,10 @@ public class EmploymentClient extends javax.swing.JFrame {
      * It is assumed throughout that both components used are JLists. Furthermore
      * it is assumed that both lists use DefaultListModels or subclasses of
      * DefaultListModel.
-     * 
-     * Note that this TransferHandler does not care about updating the database
-     * according to the changes made using drag and drop; this should be done
-     * using the lists' events.
+     *
+     * This TransferHandler takes care of updating the database according to
+     * changes made by drag and drop, and of the correct visualisation of said
+     * changes for the user.
      */
     private class ListTransferHandler extends TransferHandler {
 
@@ -994,29 +994,108 @@ public class EmploymentClient extends javax.swing.JFrame {
             JList list = (JList)transferSupport.getComponent();
             DefaultListModel listModel = (DefaultListModel)list.getModel();
             String data;
+            int selectedCompanyIndex = companyTable.getSelectedRow();
+            int ID;
+
             try {
+                //get the transferred data
                 data = (String)transferSupport.getTransferable().getTransferData(
                     DataFlavor.stringFlavor);
-                listModel.addElement(data);
+                
+                //get moved citizen's ID
+                ID = Integer.parseInt(data.split(" ")[0]);
             }
             catch(Exception ex) {
                 return false;
             }
 
-            //get moved citizen's ID
-            int ID = Integer.parseInt(data.split(" ")[0]);
+            //check if citizen has been deleted in the meantime
+            ResultSet citizen;
+            try {
+                Statement stmt2 = dbcon.createStatement();
+                citizen = stmt2.executeQuery("SELECT forename, surname,"
+                        + " companyId FROM citizens"
+                        + " WHERE id = "+ID);
+                if(!citizen.next()) {
+                    JOptionPane.showMessageDialog(null, "Dieser Bürger wurde"
+                            + " zwischenzeitlich von einem anderen Benutzer gelöscht.",
+                            "Fehler", JOptionPane.ERROR_MESSAGE);
+                    unemployedListModel.removeElement(data);
+                    companyEmployedListModel.removeElement(data);
+                }
+            }
+            catch(SQLException e) {
+                JOptionPane.showMessageDialog(null, "Fehler bei der Kommunikation mit der"
+                        + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                updateCompanyTableModel();
+                updateCompanyDisplays();
+                updateUnemployedListModel();
+                return false;
+            }
 
             //if an employee has been moved from the company list to the
             //unemployed list
             if(list == unemployedList) {
                 try {
+                    //Check if this employee has been 'employed' at another
+                    //company or marked 'unemployed' in the meantime.
+                    int companyID = Integer.parseInt((String)companyTableModel.
+                        getValueAt(selectedCompanyIndex, 0));
+                    int companyIDInDatabase = citizen.getInt("companyId");
+                    if(companyID != companyIDInDatabase) {
+                        if(companyIDInDatabase > 0)
+                            JOptionPane.showMessageDialog(null, "<html>Der gewählte"
+                                    + " Bürger wurde von einem anderen Benutzer bei der"
+                                    + " Firma Nr. "+companyIDInDatabase+" eingestellt.<br/>"
+                                    + " Aktualisiere die Daten...</html>",
+                                    "Fehler", JOptionPane.ERROR_MESSAGE);
+                        else
+                            JOptionPane.showMessageDialog(null, "<html>Der gewählte"
+                                    + " Bürger wurde bereits von einem anderen"
+                                    + " Benutzer als arbeitslos markiert..<br/>"
+                                    + " Aktualisiere die Daten...</html>",
+                                    "Fehler", JOptionPane.ERROR_MESSAGE);
+                        updateCompanyTableModel();
+                        updateCompanyDisplays();
+                        updateUnemployedListModel();
+                        return false;
+                    }
+
+                    //update the database
                     stmt.executeUpdate("UPDATE citizens SET companyId = -1"
                             + " WHERE id = "+ID);
+
+                    //update the visual representation
+                    totalUnemployedDisplay.setText(""+
+                            (Integer.parseInt(totalUnemployedDisplay.getText())+1));
+                    totalFreeJobsDisplay.setText(""+
+                            (Integer.parseInt(totalFreeJobsDisplay.getText())+1));
+                    companyEmployedListModel.removeElement(data);
+
+                    //Insert the moved citizen in the right place so that the
+                    //list remains ordered by ID.
+                    for(int ct = 0; ct < unemployedListModel.size(); ct ++) {
+                        int IDinList = Integer.parseInt(((String)unemployedListModel.
+                                getElementAt(ct)).split(" ")[0]);
+                        if(IDinList > ID) {
+                            listModel.add(ct, data);
+                            break;
+                        }
+                    }
+
+                    //add one free job to the company row in the table
+                    companyTableModel.setValueAt(""+(Integer.parseInt((String)
+                        companyTableModel.getValueAt(selectedCompanyIndex, 2)) + 1),
+                        selectedCompanyIndex, 2);
                 }
                 catch(SQLException e) {
                     JOptionPane.showMessageDialog(null, "Fehler bei der Kommunikation mit der"
                             + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
+                    updateCompanyTableModel();
+                    updateCompanyDisplays();
+                    updateUnemployedListModel();
                     return false;
                 }
             }
@@ -1024,37 +1103,87 @@ public class EmploymentClient extends javax.swing.JFrame {
             //if an employee has been moved from the unemployed list to the
             //company list
             else {
-                //get ID of the company to which the citizen is being moved
-                int index = companyTable.getSelectedRow();
-                if(index < 0)
-                    return false;
-                int companyID = Integer.parseInt((String)companyTableModel.
-                        getValueAt(index, 0));
-
-                
                 try {
-                    //check if the company has free jobs
-                    if(getFreeJobsCount(companyID) <= 0) {
-                        JOptionPane.showMessageDialog(null, "Dieser Betrieb hat"
-                                + " keine freien Stellen.", "Eingabefehler",
-                                JOptionPane.ERROR_MESSAGE);
-                        updateCompanyEmployedListModel();
+                    //Check if this employee has been 'employed' at some
+                    //company in the meantime.
+                    if(citizen.getInt("companyId") > 0) {
+                        JOptionPane.showMessageDialog(null, "<html>Der gewählte"
+                                + " Bürger wurde von einem anderen Benutzer bei einem"
+                                + " Betrieb eingestellt.<br/>"
+                                + " Aktualisiere die Daten...</html>",
+                                "Fehler", JOptionPane.ERROR_MESSAGE);
+                        updateCompanyTableModel();
+                        updateCompanyDisplays();
+                        updateUnemployedListModel();
                         return false;
                     }
-
-                    //update the database
-                    stmt.executeUpdate("UPDATE citizens SET companyId = "+companyID+
-                            " WHERE id = "+ID);
                 }
                 catch(SQLException e) {
                     JOptionPane.showMessageDialog(null, "Fehler bei der Kommunikation mit der"
                             + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
+                    updateCompanyTableModel();
+                    updateCompanyDisplays();
+                    updateUnemployedListModel();
+                    return false;
+                }
+
+                //get ID of the company to which the citizen is being moved
+                if(selectedCompanyIndex < 0)
+                    return false;
+                int companyID = Integer.parseInt((String)companyTableModel.
+                        getValueAt(selectedCompanyIndex, 0));
+
+                
+                try {
+                    //check if the company has free jobs
+                    try {
+                        if(getFreeJobsCount(companyID) <= 0) {
+                            JOptionPane.showMessageDialog(null, "Dieser Betrieb hat"
+                                    + " keine freien Stellen.", "Eingabefehler",
+                                    JOptionPane.ERROR_MESSAGE);
+                            updateCompanyEmployedListModel();
+                            return false;
+                        }
+                    }
+                    catch(IllegalArgumentException e) {
+                        //This exception indicates that a company with given
+                        //ID does not exist.
+                        JOptionPane.showMessageDialog(null, "Die gewählte Firma"
+                                + " wurde gelöscht. Aktualisiere die Daten...",
+                                "Fehler", JOptionPane.ERROR_MESSAGE);
+                        updateCompanyTableModel();
+                        updateCompanyDisplays();
+                        updateUnemployedListModel();
+                    }
+
+                    //update the database
+                    stmt.executeUpdate("UPDATE citizens SET companyId = "+companyID+
+                            " WHERE id = "+ID);
+
+                    //update the visual representation
+                    totalUnemployedDisplay.setText(""+
+                            (Integer.parseInt(totalUnemployedDisplay.getText())-1));
+                    totalFreeJobsDisplay.setText(""+
+                            (Integer.parseInt(totalFreeJobsDisplay.getText())-1));
+                    unemployedListModel.removeElement(data);
+
+                    //subtract one free job in the company's table row
+                    companyTableModel.setValueAt(""+(Integer.parseInt((String)
+                        companyTableModel.getValueAt(selectedCompanyIndex, 2)) - 1),
+                        selectedCompanyIndex, 2);
+                }
+                catch(SQLException e) {
+                    JOptionPane.showMessageDialog(null, "Fehler bei der Kommunikation mit der"
+                            + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    updateCompanyTableModel();
+                    updateCompanyDisplays();
+                    updateUnemployedListModel();
                     return false;
                 }
             }
 
-            updateUnemployedListModel();
             updateCompanyDisplays();
             return true;
         }

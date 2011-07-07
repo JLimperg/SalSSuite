@@ -16,6 +16,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -61,6 +63,23 @@ public class CitizenModulePanel extends javax.swing.JPanel {
                    evt.getType() == TableModelEvent.DELETE)
                     return;
                 cellUpdated(evt.getFirstRow(), evt.getColumn());
+            }
+        });
+
+        table.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent evt) {
+                int row = evt.getFirstIndex();
+                try {
+                    originalForename = (String)tableModel.getValueAt(row,1);
+                    originalSurname = (String)tableModel.getValueAt(row,2);
+                    originalForm = (String)tableModel.getValueAt(row,3);
+                }
+                catch(ArrayIndexOutOfBoundsException e) {}
+                //This exception occurs when all rows are removed from the
+                //table model, in which case we don't need the originalXXX stuff
+                //anyway.
             }
         });
 
@@ -226,47 +245,114 @@ public class CitizenModulePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_refreshButtonPressed
 
     private void addCitizen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCitizen
-        //add to database
         try {
+            //add to database
             stmt.executeUpdate("INSERT INTO citizens VALUES ("
                     + "DEFAULT, '', '', '', DEFAULT, DEFAULT, DEFAULT)");
+
+            //add visual representation
+            ResultSet newCitizen = stmt.executeQuery("SELECT id,companyId FROM"
+                    + " citizens WHERE id = (SELECT MAX(ID) FROM citizens)");
+            newCitizen.next();
+            tableModel.addRow(new Object[]{newCitizen.getInt("id"), "", "", "",
+                newCitizen.getInt("companyId")});
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(null, "Fehler bei der Kommunikation mit der"
                     + "Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            refreshButtonPressed(null);
             return;
         }
 
-        //add visual representation
-        refreshButtonPressed(null);
-
-        //scroll down to created citizen
+        //scroll down to the created citizen
         table.changeSelection(table.getRowCount()-1, 0, false, false);
     }//GEN-LAST:event_addCitizen
 
     private void deleteCitizen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteCitizen
-        //get IDs
+        //get rows to be deleted
         int[] deleteRows = table.getSelectedRows();
-        int[] IDs = new int[deleteRows.length];
-        
-        for(int ct = 0; ct < deleteRows.length; ct++)
-        IDs[ct] = (Integer)tableModel.getValueAt(deleteRows[ct], 0);
 
-        //remove from database
+        //Prepare fields to store lists of already deleted and modified citizens
+        //to be used for warning/error messages later.
+        String deletedCitizensDescription = "";
+        String modifiedCitizensDescription = "";
+        
         try {
-            for(int ID : IDs    )
+            //for each selected row:
+            for(int ct = 0; ct < deleteRows.length; ct ++) {
+                //get the citizen's ID
+                int row = deleteRows[ct];
+                int ID = (Integer)tableModel.getValueAt(row, 0);
+
+                //check if the selected citizen has already been deleted
+                ResultSet citizen = stmt.executeQuery("SELECT forename,surname,"
+                        + "form FROM citizens WHERE id = "+ID);
+                if(!citizen.next()) {
+                    deletedCitizensDescription += "<br/>"+
+                            (String)tableModel.getValueAt(row, 1) + " " +
+                            (String)tableModel.getValueAt(row, 2) + " (Nr. "+
+                            ID + ")";
+                    continue;
+                }
+
+                //check if they have been modified in the meantime
+                String forename = citizen.getString("forename");
+                String surname = citizen.getString("surname");
+                String form = citizen.getString("form");
+
+                if(!(
+                    forename.equals((String)tableModel.getValueAt(row, 1)) &&
+                    surname.equals((String)tableModel.getValueAt(row, 2)) &&
+                    form.equals((String)tableModel.getValueAt(row, 3))
+                  )) {
+                   modifiedCitizensDescription += "<br/>"+
+                            citizen.getString("forename") + " " +
+                            citizen.getString("surname") + " (Nr. "+
+                            ID + ")";
+                   deleteRows[ct] = -1;
+                   continue;
+                }
+
+                //if both is not the case, update the database
                 stmt.executeUpdate("DELETE FROM citizens WHERE id = "+ID);
+            }
+
+            //update the visual representation
+            int deletedRows = 0;
+            for(int row : deleteRows) {
+                if(row != -1) {
+                    tableModel.removeRow(row-deletedRows);
+                    deletedRows ++;
+                }
+            }
+
+            //print warning/error messages for modified/deleted citizens
+            if(deletedCitizensDescription.length() != 0)
+                JOptionPane.showMessageDialog(getTopLevelAncestor(),
+                        "<html>Folgende Bürger wurden"
+                        + " bereits von einem anderen Benutzer gelöscht:"+
+                        deletedCitizensDescription + "</html>", "Information",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+            if(modifiedCitizensDescription.length() != 0) {
+                JOptionPane.showMessageDialog(getTopLevelAncestor(),
+                        "<html>Folgende Bürger wurden zwischenzeitlich von einem "
+                        + "anderen Benutzer modifiziert<br/>und werden deshalb "
+                        + "nicht gelöscht:"+modifiedCitizensDescription
+                        + "<br/>Aktualisiere die Daten...</html>",
+                        "Fehler", JOptionPane.ERROR_MESSAGE);
+                refreshButtonPressed(null);
+            }
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
                     + "Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            refreshButtonPressed(null);
             return;
         }
-
-        for(int ct = 0; ct < deleteRows.length; ct++)
-            tableModel.removeRow(deleteRows[ct]-ct);
+            
     }//GEN-LAST:event_deleteCitizen
 
     private void generateCitizenList(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateCitizenList
@@ -350,6 +436,16 @@ public class CitizenModulePanel extends javax.swing.JPanel {
     FilterPanel filterPanel;
     DefaultTableModel tableModel;
 
+    /* The following fields are updated each time a row is selected. They then
+     * obtain all the cell values from that row and are later used to determine
+     * if the row's original contents match the database table's corresponding
+     * row's contents. This ensures that a user does not edit a citizen another
+     * user has edited without the former knowing.
+     */
+    String originalForename = "";
+    String originalSurname = "";
+    String originalForm = "";
+
     //============================CONSTRUCTORS================================//
 
     //==============================METHODS===================================//
@@ -403,22 +499,61 @@ public class CitizenModulePanel extends javax.swing.JPanel {
         if(!Util.checkInput(newValue))
             return;
 
-        //update database
         try {
-            if(column == 1) //forename change
+            //check if this citizen has been edited or deleted by another user in
+            //the meantime
+            ResultSet citizen = stmt.executeQuery("SELECT forename, surname,"
+                    + " form, companyId FROM citizens WHERE id = "+ID);
+            if(!citizen.next()) {
+                JOptionPane.showMessageDialog(getTopLevelAncestor(),
+                        "<html>Dieser Bürger wurde"
+                        + " zwischenzeitlich von einem anderen Benutzer"
+                        + " gelöscht.</html>",
+                        "Fehler", JOptionPane.ERROR_MESSAGE);
+                tableModel.removeRow(row);
+                return;
+            }
+
+            if(!(
+                originalForename.equals(citizen.getString("forename")) &&
+                originalSurname.equals(citizen.getString("surname")) &&
+                originalForm.equals(citizen.getString("form"))
+              )) {
+                JOptionPane.showMessageDialog(getTopLevelAncestor(),
+                        "<html>Dieser Bürger wurde"
+                        + " zwischenzeitlich von einem anderen Benutzer"
+                        + " bearbeitet.<br/>Aktualisiere die Daten...</html>",
+                        "Fehler", JOptionPane.ERROR_MESSAGE);
+                tableModel.removeRow(row);
+                tableModel.insertRow(row, new Object[] {ID, citizen.getString("forename"),
+                    citizen.getString("surname"), citizen.getString("form"),
+                    citizen.getInt("companyId")});
+                table.changeSelection(row, 0, false, false);
+                return;
+            }
+
+            //update the database
+            if(column == 1) { //forename change
                 stmt.executeUpdate("UPDATE citizens SET forename = '"+newValue+
                         "' WHERE id = "+ID);
-            else if(column == 2) //surname change
+                originalForename = newValue;
+            }
+            else if(column == 2) { //surname change
                 stmt.executeUpdate("UPDATE citizens SET surname = '"+newValue+
                         "' WHERE id = "+ID);
-            else if(column == 3) //form change
+                originalSurname = newValue;
+            }
+            else if(column == 3) { //form change
                 stmt.executeUpdate("UPDATE citizens SET form = '"+newValue+
                         "' WHERE id = "+ID);
+                originalForm = newValue;
+            }
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
-                    + "Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            refreshButtonPressed(null);
             return;
         }
     }
