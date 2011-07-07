@@ -21,6 +21,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import salssuite.clients.ConnectDialog;
 import salssuite.server.module.EmploymentModule;
@@ -75,6 +76,16 @@ public class EmploymentClient extends javax.swing.JFrame {
         unemployedList.setModel(unemployedListModel);
         companyEmployedList.setModel(companyEmployedListModel);
         companyTable.setModel(companyTableModel);
+
+        //This listener will update the company displays whenever the user
+        //selects a new table row.
+        companyTable.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+            @Override
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                updateCompanyDisplays();
+            }
+        });
         
         //connect to the server
         String[] theserver;
@@ -188,11 +199,6 @@ public class EmploymentClient extends javax.swing.JFrame {
         ));
         companyTable.setToolTipText("Eine Tabellenzeile markieren, um Details über die Firma zu erfahren.");
         companyTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        companyTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                companyTableMouseReleased(evt);
-            }
-        });
         jScrollPane1.setViewportView(companyTable);
 
         displayOnlyWithFreeJobsToggle.setFont(new java.awt.Font("Dialog", 0, 12));
@@ -223,12 +229,12 @@ public class EmploymentClient extends javax.swing.JFrame {
             .addGroup(topLeftPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(topLeftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
                     .addComponent(displayOnlyWithFreeJobsToggle)
                     .addGroup(topLeftPanelLayout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(companyFilterFeedbackDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
+                        .addComponent(companyFilterFeedbackDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel11)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -323,14 +329,14 @@ public class EmploymentClient extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(bottomLeftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(bottomLeftPanelLayout.createSequentialGroup()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
                         .addContainerGap())
                     .addGroup(bottomLeftPanelLayout.createSequentialGroup()
                         .addGroup(bottomLeftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(bottomLeftPanelLayout.createSequentialGroup()
                                 .addComponent(jLabel3)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(companyDescriptionDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE))
+                                .addComponent(companyDescriptionDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
                             .addGroup(bottomLeftPanelLayout.createSequentialGroup()
                                 .addGroup(bottomLeftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel6)
@@ -350,13 +356,13 @@ public class EmploymentClient extends javax.swing.JFrame {
                                         .addGroup(bottomLeftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addComponent(companyFreeJobsDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                             .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                    .addComponent(companyFounderDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
-                                    .addComponent(companyNameDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE))))
+                                    .addComponent(companyFounderDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                                    .addComponent(companyNameDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))))
                         .addContainerGap())
                     .addComponent(jLabel14)
                     .addGroup(bottomLeftPanelLayout.createSequentialGroup()
                         .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 176, Short.MAX_VALUE)
                         .addComponent(refreshButton)
                         .addContainerGap())))
         );
@@ -439,7 +445,7 @@ public class EmploymentClient extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addGap(18, 18, 18)
@@ -447,7 +453,7 @@ public class EmploymentClient extends javax.swing.JFrame {
                         .addGap(6, 6, 6)
                         .addComponent(unemployedFilterInput, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(unemployedFilterFeedbackDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+                        .addComponent(unemployedFilterFeedbackDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton1))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
@@ -457,7 +463,7 @@ public class EmploymentClient extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel16)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(totalFreeJobsDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)))
+                        .addComponent(totalFreeJobsDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         rightPanelLayout.setVerticalGroup(
@@ -489,10 +495,6 @@ public class EmploymentClient extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void companyTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_companyTableMouseReleased
-        updateCompanyDisplays();
-    }//GEN-LAST:event_companyTableMouseReleased
 
     private void updateTotalJobsCount(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_updateTotalJobsCount
         if(evt.getKeyCode() != java.awt.event.KeyEvent.VK_ENTER)
