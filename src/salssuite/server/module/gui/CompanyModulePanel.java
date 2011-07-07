@@ -114,6 +114,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         editCompanyButton = new javax.swing.JButton();
         deleteCompanyButton = new javax.swing.JButton();
         generateListButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
 
@@ -121,7 +122,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
 
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
         jLabel1.setText("Betrieb");
 
         addCompanyButton.setText("hinzufügen");
@@ -155,6 +156,14 @@ public class CompanyModulePanel extends javax.swing.JPanel{
             }
         });
 
+        jButton1.setText("Aktualisieren");
+        jButton1.setToolTipText("Synchronisiert alle Daten mit denen des Servers. Dies kann eine Weile dauern.");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -168,7 +177,9 @@ public class CompanyModulePanel extends javax.swing.JPanel{
                 .addComponent(editCompanyButton)
                 .addGap(18, 18, 18)
                 .addComponent(deleteCompanyButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 234, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 114, Short.MAX_VALUE)
+                .addComponent(jButton1)
+                .addGap(18, 18, 18)
                 .addComponent(generateListButton)
                 .addContainerGap())
         );
@@ -181,7 +192,8 @@ public class CompanyModulePanel extends javax.swing.JPanel{
                     .addComponent(jLabel1)
                     .addComponent(editCompanyButton)
                     .addComponent(deleteCompanyButton)
-                    .addComponent(generateListButton))
+                    .addComponent(generateListButton)
+                    .addComponent(jButton1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -391,6 +403,10 @@ public class CompanyModulePanel extends javax.swing.JPanel{
                 "Erfolg", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_generateCompanyList
 
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        filterPanel.clearFilters();
+    }//GEN-LAST:event_refreshButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addCompanyButton;
@@ -398,6 +414,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
     private javax.swing.JButton editCompanyButton;
     private javax.swing.JPanel filterDummyPanel;
     private javax.swing.JButton generateListButton;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
