@@ -409,8 +409,9 @@ public class NameToIDClient extends JFrame {
                 //use LIKE statements.
                 ResultSet citizen = stmt.executeQuery("SELECT id, forename, surname" +
                         " FROM citizens" +
-                        " WHERE forename LIKE '"+forename+"%' AND surname LIKE '" +
-                        surname+"%'");
+                        " WHERE LOWER(forename) LIKE LOWER("
+                        + "'"+forename+"%') AND LOWER(surname) LIKE LOWER('" +
+                        surname+"%')");
 
                 if(!citizen.next()) {
                     JOptionPane.showMessageDialog(this, "Kein Bürger mit diesem" +

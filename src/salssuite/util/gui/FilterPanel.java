@@ -388,7 +388,8 @@ public class FilterPanel extends javax.swing.JPanel{
 
             //add string field
             if(fieldTypes.get(fieldName) == STRING_FIELD) {
-                queryString += fieldName + " LIKE '%" + input1 + "%'";
+                queryString += "LOWER(" + fieldName + ") LIKE"
+                        + " LOWER('%" + input1 + "%')";
             }
 
             //add number field
