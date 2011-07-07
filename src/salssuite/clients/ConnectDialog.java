@@ -377,6 +377,8 @@ public class ConnectDialog extends javax.swing.JDialog {
             proxyHost = proxyUsername = "";
             proxyPassword = new char[0];
             proxyPort = -1;
+            System.setProperty("socksProxyHost", "");
+            System.setProperty("socksProxyPort", "");
         }
 
         //parse the rest of the input
