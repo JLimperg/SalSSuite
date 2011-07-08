@@ -256,7 +256,7 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
 
     private void editWare(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editWare
         //get selected ware
-        int row = table.getSelectedRow();
+        int row = table.convertRowIndexToModel(table.getSelectedRow());
         if(row < 0)
             return;
 
@@ -288,7 +288,7 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
     private void deleteWare(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteWare
 
         //get ID of selected ware
-        int row = table.getSelectedRow();
+        int row = table.convertRowIndexToModel(table.getSelectedRow());
         if(row < 0)
             return;
 

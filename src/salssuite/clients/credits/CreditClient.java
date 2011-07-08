@@ -69,9 +69,10 @@ public class CreditClient extends javax.swing.JFrame {
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent evt) {
                 try {
-                    originalRowData = Util.getTableRow(tableModel, evt.getFirstIndex());
+                    originalRowData = Util.getTableRow(tableModel,
+                            table.convertRowIndexToModel(evt.getFirstIndex()));
                 }
-                catch(ArrayIndexOutOfBoundsException e) {}
+                catch(IndexOutOfBoundsException e) {}
                 //This exception occurs when all rows are removed from the
                 //table model, in which case we don't need the originalRowData stuff
                 //anyway.
@@ -365,13 +366,15 @@ public class CreditClient extends javax.swing.JFrame {
 
         int[] IDs = new int[rows.length];
         for(int ct = 0; ct < rows.length; ct++)
-            IDs[ct] = (Integer)tableModel.getValueAt(rows[ct], 0);
+            IDs[ct] = (Integer)tableModel.getValueAt(table.convertRowIndexToModel(
+                    rows[ct]), 0);
 
         //Check if any of the credits to be removed have been edited in the
         //meantime.
         String editedRowsDescription = "";
         for(int ct = 0; ct < rows.length; ct++)
-            if(hasRowChanged(Util.getTableRow(tableModel, rows[ct]))) {
+            if(hasRowChanged(Util.getTableRow(tableModel,
+                table.convertRowIndexToModel(rows[ct])))) {
                 editedRowsDescription += "<br/>Nr." + IDs[ct];
                 rows[ct] = -1;
             }
@@ -406,7 +409,8 @@ public class CreditClient extends javax.swing.JFrame {
         int removedRowsCount = 0;
         for(int ct = 0; ct < rows.length; ct++)
             if(rows[ct] >= 0) {
-                tableModel.removeRow(rows[ct]-removedRowsCount);
+                tableModel.removeRow(table.convertRowIndexToModel(rows[ct])
+                        -removedRowsCount);
                 removedRowsCount ++;
             }
 
@@ -810,12 +814,53 @@ public class CreditClient extends javax.swing.JFrame {
 
                 dayInputCal = new GregorianCalendar(year, month-1, day);
 
-                if(column == 6) //we are modifying startDay
+                if(column == 6) { //we are modifying startDay
+                    //check if startDay is before endDay
+                    String endDay = (String)tableModel.getValueAt(row, 7);
+                    String[] endDayInputSplit = Util.parseDateString(endDay);
+                    int endDayYear = Integer.parseInt(endDayInputSplit[0]);
+                    int endDayMonth = Integer.parseInt(endDayInputSplit[1]);
+                    int endDayDay = Integer.parseInt(endDayInputSplit[2]);
+                    GregorianCalendar endDayCal = new GregorianCalendar(
+                            endDayYear, endDayMonth-1, endDayDay);
+
+                    if(endDayCal.before(dayInputCal)) {
+                        JOptionPane.showMessageDialog(this, "<html>Der Tag, an dem der"
+                        + " Kredit fällig ist,<br/> muss vor dem Ausgabetag"
+                        + " liegen.", "Eingabefehler", JOptionPane.ERROR_MESSAGE);
+
+                        //revert the UI change
+                        tableModel.setValueAt(originalRowData[6], row, 6);
+                        break global;
+                    }
+
+                    //update the database
                     stmt.executeUpdate("UPDATE credits SET startDay = '" +
                             Util.getDateString(dayInputCal) + "' WHERE id = "+ID);
-                else //we are modifying endDay
+                }
+                else { //we are modifying endDay
+                    //check if startDay is before endDay
+                    String startDay = (String)tableModel.getValueAt(row, 6);
+                    String[] startDayInputSplit = Util.parseDateString(startDay);
+                    int startDayYear = Integer.parseInt(startDayInputSplit[0]);
+                    int startDayMonth = Integer.parseInt(startDayInputSplit[1]);
+                    int startDayDay = Integer.parseInt(startDayInputSplit[2]);
+                    GregorianCalendar startDayCal = new GregorianCalendar(
+                            startDayYear, startDayMonth-1, startDayDay);
+
+                    if(dayInputCal.before(startDayCal)) {
+                        JOptionPane.showMessageDialog(this, "<html>Der Tag, an dem der"
+                        + " Kredit fällig ist,<br/> muss vor dem Ausgabetag"
+                        + " liegen.", "Eingabefehler", JOptionPane.ERROR_MESSAGE);
+
+                        //revert the UI change
+                        tableModel.setValueAt(originalRowData[7], row, 7);
+                        break global;
+                    }
+
                     stmt.executeUpdate("UPDATE credits SET endDay = '" +
                             Util.getDateString(dayInputCal) + "' WHERE id = "+ID);
+                }
 
                 //compute current amount
                 double originalAmount = (Double)tableModel.getValueAt(row, 4);

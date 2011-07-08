@@ -129,7 +129,7 @@ public class AccountManagingPanel extends javax.swing.JPanel {
         addUserButton.setToolTipText("Fügt einen Benutzer hinzu.");
         addUserButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addUserButtonaddUser(evt);
+                addUser(evt);
             }
         });
 
@@ -137,7 +137,7 @@ public class AccountManagingPanel extends javax.swing.JPanel {
         deleteUserButton.setToolTipText("Löscht den in der Tabelle markierten Benutzer.");
         deleteUserButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteUserButtondeleteUser(evt);
+                deleteUser(evt);
             }
         });
 
@@ -146,14 +146,14 @@ public class AccountManagingPanel extends javax.swing.JPanel {
         changePasswordButton.setText("Passwort ändern");
         changePasswordButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                changePasswordButtonchangePassword(evt);
+                changePassword(evt);
             }
         });
 
         refreshButton.setText("Aktualisieren");
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButtonActionPerformed(evt);
+                refresh(evt);
             }
         });
 
@@ -210,7 +210,7 @@ public class AccountManagingPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addUserButtonaddUser(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUserButtonaddUser
+    private void addUser(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUser
 
         //ask for username
         String username = JOptionPane.showInputDialog(this, "Benutzername:",
@@ -263,12 +263,12 @@ public class AccountManagingPanel extends javax.swing.JPanel {
 
         //update table
         updateTableModel();
-}//GEN-LAST:event_addUserButtonaddUser
+}//GEN-LAST:event_addUser
 
-    private void deleteUserButtondeleteUser(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteUserButtondeleteUser
+    private void deleteUser(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteUser
 
         //get selected user
-        int selectedIndex = table.getSelectedRow();
+        int selectedIndex = table.convertRowIndexToModel(table.getSelectedRow());
         if(selectedIndex < 0) {
             JOptionPane.showMessageDialog(this, "Kein Benutzer ausgewählt.",
                     "Eingabefehler", JOptionPane.ERROR_MESSAGE);
@@ -307,12 +307,12 @@ public class AccountManagingPanel extends javax.swing.JPanel {
 
         //update table model
         updateTableModel();
-}//GEN-LAST:event_deleteUserButtondeleteUser
+}//GEN-LAST:event_deleteUser
 
-    private void changePasswordButtonchangePassword(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changePasswordButtonchangePassword
+    private void changePassword(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changePassword
 
         //determine username
-        int selectedIndex = table.getSelectedRow();
+        int selectedIndex = table.convertRowIndexToModel(table.getSelectedRow());
         if(selectedIndex < 0) {
             JOptionPane.showMessageDialog(this, "Kein Benutzer ausgewählt.",
                     "Eingabefehler", JOptionPane.ERROR_MESSAGE);
@@ -384,11 +384,11 @@ public class AccountManagingPanel extends javax.swing.JPanel {
             e.printStackTrace();
             return;
         }
-    }//GEN-LAST:event_changePasswordButtonchangePassword
+    }//GEN-LAST:event_changePassword
 
-    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+    private void refresh(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refresh
         updateTableModel();
-}//GEN-LAST:event_refreshButtonActionPerformed
+}//GEN-LAST:event_refresh
 
     private void tableeditPermissions(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableeditPermissions
         if(!(evt.getButton() == java.awt.event.MouseEvent.BUTTON1 &&
@@ -396,7 +396,7 @@ public class AccountManagingPanel extends javax.swing.JPanel {
             return;
 
         //get selected user
-        int row = table.getSelectedRow();
+        int row = table.convertRowIndexToModel(table.getSelectedRow());
         if(row < 0)
             return;
 

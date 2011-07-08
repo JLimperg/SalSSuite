@@ -322,7 +322,7 @@ public class AccountingClient extends javax.swing.JFrame {
             return;
 
         //get selected entry
-        int row = table.getSelectedRow();
+        int row = table.convertRowIndexToModel(table.getSelectedRow());
         if(row < 0)
             return;
 

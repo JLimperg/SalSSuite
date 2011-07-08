@@ -517,7 +517,7 @@ public class EmploymentClient extends javax.swing.JFrame {
         }
 
         //test if new jobs count is less than current employees added, if so abort
-        int index = companyTable.getSelectedRow();
+        int index = companyTable.convertRowIndexToModel(companyTable.getSelectedRow());
         if(index < 0)
             return;
         int ID = Integer.parseInt((String)companyTableModel.getValueAt(index, 0));
@@ -761,7 +761,7 @@ public class EmploymentClient extends javax.swing.JFrame {
     private void updateCompanyDisplays() {
 
         //get selected company
-        int selectedIndex = companyTable.getSelectedRow();
+        int selectedIndex = companyTable.convertRowIndexToModel(companyTable.getSelectedRow());
 
         if(selectedIndex < 0) { //no company selected
             companyEmployedList.setEnabled(false);
@@ -822,7 +822,7 @@ public class EmploymentClient extends javax.swing.JFrame {
         companyEmployedList.setModel(companyEmployedListModel);
 
         //get selected company
-        int index = companyTable.getSelectedRow();
+        int index = companyTable.convertRowIndexToModel(companyTable.getSelectedRow());
         if(index < 0)
             return;
         int ID = Integer.parseInt((String)companyTableModel.getValueAt(index, 0));
@@ -996,7 +996,8 @@ public class EmploymentClient extends javax.swing.JFrame {
             JList list = (JList)transferSupport.getComponent();
             DefaultListModel listModel = (DefaultListModel)list.getModel();
             String data;
-            int selectedCompanyIndex = companyTable.getSelectedRow();
+            int selectedCompanyIndex = companyTable.convertRowIndexToModel(
+                    companyTable.getSelectedRow());
             int ID;
 
             try {

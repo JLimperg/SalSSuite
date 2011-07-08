@@ -263,7 +263,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
     private void deleteCompany(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteCompany
 
         //get selected company
-        int selectedIndex = table.getSelectedRow();
+        int selectedIndex = table.convertRowIndexToModel(table.getSelectedRow());
 
         if(selectedIndex < 0) {
             JOptionPane.showMessageDialog(this, "Kein Betrieb zum Bearbeiten " +
@@ -445,7 +445,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
      */
     private void editCompany() {
         //get company
-        int selectedIndex = table.getSelectedRow();
+        int selectedIndex = table.convertRowIndexToModel(table.getSelectedRow());
 
         if(selectedIndex < 0) {
             JOptionPane.showMessageDialog(this, "Kein Betrieb zum Bearbeiten " +

@@ -70,8 +70,8 @@ public class CitizenModulePanel extends javax.swing.JPanel {
                 new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent evt) {
-                int row = evt.getFirstIndex();
                 try {
+                    int row = table.convertRowIndexToModel(evt.getFirstIndex());
                     originalForename = (String)tableModel.getValueAt(row,1);
                     originalSurname = (String)tableModel.getValueAt(row,2);
                     originalForm = (String)tableModel.getValueAt(row,3);
@@ -282,7 +282,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
             //for each selected row:
             for(int ct = 0; ct < deleteRows.length; ct ++) {
                 //get the citizen's ID
-                int row = deleteRows[ct];
+                int row = table.convertRowIndexToModel(deleteRows[ct]);
                 int ID = (Integer)tableModel.getValueAt(row, 0);
 
                 //check if the selected citizen has already been deleted
@@ -316,6 +316,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
 
                 //if both is not the case, update the database
                 stmt.executeUpdate("DELETE FROM citizens WHERE id = "+ID);
+                tableModel.removeRow(row);
             }
 
             //update the visual representation
