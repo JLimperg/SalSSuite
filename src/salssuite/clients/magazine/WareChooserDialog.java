@@ -10,9 +10,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * Lets the user choose a ware from the list of available wares, and how many
@@ -36,19 +36,10 @@ public class WareChooserDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
 
-        //initialize model for combo box
-        LinkedList<String> wareDescriptions;
+        //connect to the database
         try {
             dbcon = databaseConnection;
             stmt = dbcon.createStatement();
-            ResultSet wares = stmt.executeQuery("SELECT id, name FROM goods");
-
-            wareDescriptions = new LinkedList<String>();
-            while(wares.next()) {
-                wareDescriptions.add(""+
-                        wares.getInt("id")+":"+
-                        wares.getString("name"));
-            }
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(parent, "Verbindung mit der Datenbank" +
@@ -58,9 +49,25 @@ public class WareChooserDialog extends javax.swing.JDialog {
             return;
         }
 
-        
-        wareChooser.setModel(new DefaultComboBoxModel(wareDescriptions.toArray(
-                new String[0])));
+        //set up document listener on ID input field
+        wareIDInput.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateWareFeedbackDisplay();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateWareFeedbackDisplay();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateWareFeedbackDisplay();
+            }
+
+        });
 
         //usability tweaks
         int xLocation = parent.getX() + parent.getWidth()/2 - getWidth()/2;
@@ -87,6 +94,7 @@ public class WareChooserDialog extends javax.swing.JDialog {
 
         //set values according to given ones
         piecesInput.setText(""+oldPieces);
+        wareIDInput.setText(""+oldWareID);
         try {
             ResultSet ware = stmt.executeQuery("SELECT (name) FROM " +
                     "goods WHERE id = "+oldWareID);
@@ -95,9 +103,7 @@ public class WareChooserDialog extends javax.swing.JDialog {
                         "Datenfehler", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            wareChooser.setSelectedItem(""+oldWareID+":"+ware.getString(
-                    "name"));
+            wareFeedbackDisplay.setText(ware.getString("name"));
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(parent, "Verbindung mit der Datenbank" +
@@ -118,9 +124,10 @@ public class WareChooserDialog extends javax.swing.JDialog {
 
         piecesInput = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        wareChooser = new javax.swing.JComboBox();
         OKButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        wareIDInput = new javax.swing.JTextField();
+        wareFeedbackDisplay = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -130,14 +137,7 @@ public class WareChooserDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel1.setText("x Ware");
-
-        wareChooser.setToolTipText("ID einer Ware auswählen");
-        wareChooser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                wareChosen(evt);
-            }
-        });
+        jLabel1.setText("x Ware Nr.");
 
         OKButton.setText("OK");
         OKButton.addActionListener(new java.awt.event.ActionListener() {
@@ -153,23 +153,31 @@ public class WareChooserDialog extends javax.swing.JDialog {
             }
         });
 
+        wareIDInput.setToolTipText("ID der gewünschten Ware eingeben.");
+        wareIDInput.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OKButtonPressed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(piecesInput, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(3, 3, 3)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(wareIDInput, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(piecesInput, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(3, 3, 3)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(wareChooser, 0, 402, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(cancelButton)
                         .addGap(18, 18, 18)
-                        .addComponent(OKButton)))
+                        .addComponent(OKButton))
+                    .addComponent(wareFeedbackDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -179,7 +187,8 @@ public class WareChooserDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(piecesInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
-                    .addComponent(wareChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(wareIDInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(wareFeedbackDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(OKButton)
@@ -193,8 +202,23 @@ public class WareChooserDialog extends javax.swing.JDialog {
     private void OKButtonPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OKButtonPressed
 
         //parse the input
-        chosenWareID = Integer.parseInt(((String)wareChooser.getModel().
-                getSelectedItem()).split(":")[0]);
+        try {
+            chosenWareID = Integer.parseInt(wareIDInput.getText());
+            if(chosenWareID <= 0)
+                throw new NumberFormatException();
+
+            ResultSet ware = stmt.executeQuery("SELECT id FROM goods WHERE ID"
+                    + " = "+chosenWareID);
+            if(!ware.next())
+                throw new Exception();
+        }
+        catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Bitte gültige Waren-ID eingeben.",
+                    "Eingabefehler", JOptionPane.ERROR_MESSAGE);
+            chosenWareID = -1;
+            pieces = -1;
+            return;
+        }
 
         try {
             pieces = Integer.parseInt(piecesInput.getText());
@@ -238,16 +262,13 @@ public class WareChooserDialog extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_cancelButtonPressed
 
-    private void wareChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wareChosen
-        OKButton.requestFocus();
-    }//GEN-LAST:event_wareChosen
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton OKButton;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField piecesInput;
-    private javax.swing.JComboBox wareChooser;
+    private javax.swing.JLabel wareFeedbackDisplay;
+    private javax.swing.JTextField wareIDInput;
     // End of variables declaration//GEN-END:variables
 
     //========================================================================//
@@ -284,6 +305,41 @@ public class WareChooserDialog extends javax.swing.JDialog {
      */
     public int getPieces() {
         return pieces;
+    }
+
+    /**
+     * Reads the chosen ware ID, looks it up in the database and updates the
+     * wareFeedbackDisplay so that it tells the user
+     * a) if it exists: the ware's name.
+     * b) if it does not exist: that it does not exist.
+     */
+    private void updateWareFeedbackDisplay() {
+        try {
+            int wareID = Integer.parseInt(wareIDInput.getText());
+            if(wareID <= 0)
+                throw new NumberFormatException();
+
+            ResultSet ware = stmt.executeQuery("SELECT name FROM goods WHERE"
+                    + " id = " + wareID);
+            if(!ware.next()) {
+                displayError("nicht gefunden");
+                return;
+            }
+
+            wareFeedbackDisplay.setForeground(java.awt.Color.BLACK);
+            wareFeedbackDisplay.setText(ware.getString("name"));
+        }
+        catch(NumberFormatException e) {
+            displayError("ungültige Eingabe");
+        }
+        catch(SQLException e) {
+            displayError("Netwerkfehler");
+        }
+    }
+
+    private void displayError(String errorMessage) {
+        wareFeedbackDisplay.setText(errorMessage);
+        wareFeedbackDisplay.setForeground(java.awt.Color.RED);
     }
 
     //============================INNER CLASSES===============================//

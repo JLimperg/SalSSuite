@@ -238,8 +238,9 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
              * same moment. In this case the UI is going to be messed up, but it
              * can be restored using the refresh button.
              */
-            newOrderID = stmt.executeQuery("SELECT MAX(id) AS maxid FROM orders")
-                    .getInt("maxid");
+            ResultSet maxID = stmt.executeQuery("SELECT MAX(id) AS maxid FROM orders");
+            maxID.next();
+            newOrderID = maxID.getInt("maxid");
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation" +

@@ -24,19 +24,19 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="piecesInput" min="-2" pref="35" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
-                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="wareChooser" pref="402" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
+              <Component id="piecesInput" min="-2" pref="35" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
+              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="wareIDInput" min="-2" pref="55" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" attributes="0">
                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="OKButton" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="wareFeedbackDisplay" pref="305" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -49,7 +49,8 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="piecesInput" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="wareChooser" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="wareIDInput" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="wareFeedbackDisplay" alignment="3" min="-2" pref="28" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -69,19 +70,8 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="x Ware"/>
+        <Property name="text" type="java.lang.String" value="x Ware Nr."/>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="wareChooser">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="0"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" value="ID einer Ware ausw&#xe4;hlen"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="wareChosen"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="OKButton">
       <Properties>
@@ -98,6 +88,16 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonPressed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="wareIDInput">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" value="ID der gew&#xfc;nschten Ware eingeben."/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OKButtonPressed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="wareFeedbackDisplay">
     </Component>
   </SubComponents>
 </Form>
