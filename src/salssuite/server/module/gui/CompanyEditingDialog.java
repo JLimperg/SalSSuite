@@ -402,7 +402,7 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
             return;
 
         //test if he happens to be the founder
-        Employee founder = parseFounder();
+        Employee founder = parseFounder(false);
         if(founder != null && founder.getID() == newEmpl.getID()) {
             JOptionPane.showMessageDialog(parent, "Neuer Angestellter darf " +
                     "nicht der Gründer sein.", "Eingabefehler",
@@ -562,7 +562,7 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
                 !Util.checkInput(productDescription))
             return false;
 
-        Employee boss = parseFounder();
+        Employee boss = parseFounder(true);
         if(boss == null) {
             return false;
         }
@@ -670,9 +670,12 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
     /**
      * Parses all data concerning the company's founder. In case of failure
      * prints out error messages automatically.
+     * @param checkIfFounderIsAlreadyEmployed When set to true, this method
+     * checks if the founder is already employed at another company and prints
+     * a warning message if this is the case.
      * @return The parsed founder as an Employee, or null if there was an error.
      */
-    private Employee parseFounder() {
+    private Employee parseFounder(boolean checkIfFounderIsAlreadyEmployed) {
         int ID;
         double salary;
         Employee founder;
@@ -706,7 +709,8 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
 
             //Check if the founder is already employed at another company.
             //If so, display a warning.
-            if(boss.getInt("companyId") != companyID && boss.getInt("companyId") > 0) {
+            if(checkIfFounderIsAlreadyEmployed &&
+                    boss.getInt("companyId") != companyID && boss.getInt("companyId") > 0) {
                 int option = JOptionPane.showConfirmDialog(this, "<html>Der"
                         + " gewählte Gründer ist bereits bei einem anderen Betrieb"
                         + " angestellt.<br/>Wenn Sie ihn bei diesem Betrieb anstellen,"
