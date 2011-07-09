@@ -14,14 +14,17 @@ import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import javax.swing.JDialog;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import salssuite.util.TableModelUpdater;
 import salssuite.util.Util;
 import salssuite.util.gui.FilterPanel;
-import salssuite.util.gui.ProgressDialog;
 
 /**
  * Panel to manage the list of wares available at the magazine. Provides direct
@@ -39,7 +42,8 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
     private static final long serialVersionUID=1;
 
     /**
-     * Sole constructor.
+     * Sole constructor. Note that this panel will not fetch data from the
+     * database at creation time. Use {@link #updateTableModel} for that purpose.
      * @param client The client this panel is part of.
      */
     public MagazineClientWarePanel(MagazineClient client){
@@ -77,8 +81,8 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
             filterPanelPlaceholder.setLayout(new BorderLayout());
             filterPanelPlaceholder.add(filterPanel, BorderLayout.CENTER);
 
-            //fetch data
-            updateTableModel(filterPanel.getFilteredData());
+            //set up the updater
+            updater = new WareTableModelUpdater();
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(client, "Konnte nicht mit der" +
@@ -358,7 +362,7 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
         destFile = fileChooser.getSelectedFile();
 
         //open the file and print the header
-        PrintWriter out;
+        final PrintWriter out;
         try {
             out = new PrintWriter(new java.io.FileWriter(destFile));
             out.println("\"Nummer\",\"Bezeichnung\",\"Einheit\",\"Preis (Staat)\","
@@ -372,42 +376,85 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
             return;
         }
 
-        //print the data
+        //determine how many rows we have to process
+        int totalRows;
+        final Statement stmt2;
         try {
-            ProgressDialog dia = ProgressDialog.showProgressDialog(
-                    (java.awt.Frame)getTopLevelAncestor(),
-                    false, JDialog.DISPOSE_ON_CLOSE, true, "Schreibe Daten...");
-
-            ResultSet data = stmt.executeQuery("SELECT id, name, packageSize,"
-                    + "packageName, packageUnit, seller, realPrice, fictivePrice"
-                    + " FROM goods");
-            
-            while(data.next()) {
-                String line = "";
-                line += data.getString("id") + ",\"";
-                line += data.getString("name") + "\",\"";
-                line += data.getString("packageName") + " (" +
-                        data.getString("packageSize") + " " +
-                        data.getString("packageUnit") + ")\",";
-                line += data.getString("fictivePrice") + ",";
-                line += data.getString("realPrice") + ",\"";
-                line += data.getString("seller") + "\"";
-                out.println(line);
-            }
-
-            dia.dispose();
+            stmt2 = client.getDatabaseConnection().createStatement();
+            ResultSet rowCount = stmt2.executeQuery("SELECT COUNT(*) FROM"
+                    + " goods");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
         }
         catch(SQLException e) {
-            JOptionPane.showMessageDialog(getTopLevelAncestor(), "Datenbankfehler"
-                    + "beim Schreiben der Daten.", "Dateifehler",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return;
         }
 
-        //flush and close
-        out.flush();
-        out.close();
+        //create the ProgressMonitor
+        final ProgressMonitor monitor = new ProgressMonitor(client,
+                "Erstelle Warenliste...", null, 0, totalRows);
+
+        //create SwingWorker
+        SwingWorker<Object, Integer> worker = new SwingWorker<Object, Integer>() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                //print the data
+                try {
+                    ResultSet data = stmt2.executeQuery("SELECT id, name,"
+                            + "packageSize,packageName, packageUnit, seller,"
+                            + "realPrice, fictivePrice FROM goods");
+
+                    int lineCount = 0;
+                    while(data.next()) {
+                        if(monitor.isCanceled())
+                            break;
+
+                        String line = "";
+                        line += data.getString("id") + ",\"";
+                        line += data.getString("name") + "\",\"";
+                        line += data.getString("packageName") + " (" +
+                                data.getString("packageSize") + " " +
+                                data.getString("packageUnit") + ")\",";
+                        line += data.getString("fictivePrice") + ",";
+                        line += data.getString("realPrice") + ",\"";
+                        line += data.getString("seller") + "\"";
+                        out.println(line);
+                        lineCount ++;
+                        publish(lineCount);
+                    }
+
+                    done();
+                }
+                catch(SQLException e) {
+                    JOptionPane.showMessageDialog(getTopLevelAncestor(), "Datenbankfehler"
+                            + "beim Schreiben der Daten.", "Dateifehler",
+                            JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    done();
+                    return null;
+                }
+
+                return null;
+            } //end doInBackground()
+
+            @Override
+            protected void process(List<Integer> chunks) {
+                monitor.setProgress(chunks.get(chunks.size()-1));
+            }
+
+            @Override
+            protected void done() {
+                out.flush();
+                out.close();
+            }
+
+        }; //end SwingWorker
+
+        worker.execute();        
     }//GEN-LAST:event_generateWareList
 
 
@@ -436,6 +483,7 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
     DefaultTableModel tableModel;
 
     FilterPanel filterPanel;
+    TableModelUpdater updater;
 
     //==============================METHODS===================================//
 
@@ -444,32 +492,45 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
      * goods list is then updated accordingly by this method.
      */
     private void filterEntered() {
-        updateTableModel(filterPanel.getFilteredData());
+        updateTableModel();
     }
     
 
     /**
-     * Updates the table model to reflect the given list of wares.
-     * @param wares A ResultSet storing all data about all wares that should
-     * be displayed.
+     * Updates the table model to reflect the list of wares filtered by the
+     * <code>FilterPanel</code>. This method will start the update and then
+     * return, with the update running in another thread.
+     * @return The <code>SwingWorker</code> which actually performs the update.
      */
-    private void updateTableModel(ResultSet wares) {
+    private SwingWorker<LinkedList<Object[]>, Object[]> updateTableModel() {
+
+        ResultSet wares = filterPanel.getFilteredData();
 
         //clear model
         tableModel.setRowCount(0);
 
-
-        //construct new model
+        //Determine how many rows there are in the database table. Note that
+        //in case of a filtered table, this number will most probably not
+        //correspond to the number of rows in the wares ResultSet.
+        int totalRows;
         try {
-            while(wares.next())
-                tableModel.addRow(buildTableRowData(wares));
+            Statement stmt2 = client.getDatabaseConnection().createStatement();
+            ResultSet numberOfWares = stmt2.executeQuery("SELECT COUNT(*) "
+                    + " FROM goods");
+            numberOfWares.next();
+            totalRows = numberOfWares.getInt(1);
         }
         catch(SQLException e) {
-            JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation" +
-                    " mit der Datenbank.", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
-            return;
+            return null;
         }
+
+        //construct new model
+        if(totalRows != 0)
+            return updater.update(wares, totalRows);
+        return null;
     }
 
     /**
@@ -554,4 +615,25 @@ public class MagazineClientWarePanel extends javax.swing.JPanel {
     }
 
     //============================INNER CLASSES===============================//
+
+    private class WareTableModelUpdater extends TableModelUpdater {
+
+        public WareTableModelUpdater() {
+            super(client, tableModel, "Lade die Waren...");
+        }
+
+        @Override
+        public Object[] buildTableRow(ResultSet data) {
+            try {
+                return buildTableRowData(data);
+            }
+            catch(SQLException e) {
+                JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation" +
+                        " mit der Datenbank.", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+    }
 }

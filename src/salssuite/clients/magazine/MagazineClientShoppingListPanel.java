@@ -8,6 +8,7 @@ package salssuite.clients.magazine;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -15,10 +16,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import salssuite.util.Util;
 
@@ -49,7 +53,8 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
     private static final long serialVersionUID = 1;
 
     /**
-     * Sole constructor.
+     * Sole constructor. Note that this constructor will not generate a
+     * shopping list; for that purpose use {@link #updateList}.
      * @param client The <code>MagazineClient</code> this panel belongs to.
      */
     public MagazineClientShoppingListPanel(MagazineClient client) {
@@ -70,8 +75,6 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
             System.exit(1);
             return;
         }
-
-        updateList();
     }
 
     /** This method is called from within the constructor to
@@ -185,12 +188,14 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
             return;
 
         //remove all panels and their desktop entries
+        client.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         for(MagazineClientShoppingListPartPanel partPanel : getPartPanels()) {
             if(partPanel == null)
                 continue;
             
             partPanel.setNotRequiredAnyMore();
         }
+        client.setCursor(Cursor.getDefaultCursor());
     }//GEN-LAST:event_setAllNotRequiredAnyMore
 
     /**
@@ -215,7 +220,7 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
 
 
         //open connection to the file
-        PrintWriter out;
+        final PrintWriter out;
         try {
             destFile.getParentFile().mkdirs();
             destFile.createNewFile();
@@ -226,149 +231,194 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
                     " öffnen.", "Dateifehler", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        //export the data
-        //note that it is assumed that a print version of the text file may
-        //contain rows of up to 100 characters.
-
-        //a) generate the header
-        out.println("SalSSuite: Warenlager");
-        out.println("EINKAUFSLISTE");
-        out.println("Generiert am "+Util.getDateString()+" um "+Util.
-                getTimeString());
-
-        out.println();
-        out.println();
-
-        //strings containing some space characters for the header
-        String _30spaces = "";
-        String _22spaces = "";
-
-        for(int ct = 1; ct <= 30; ct++) {
-            _30spaces += " ";
-            if(ct <= 22)
-                _22spaces += " ";
-        }
-
-        out.println("STK | BEZEICHNUNG "+_30spaces+"| ID  | PACKUNG "+
-                _22spaces+"| PREIS 1 STK");
-        out.println();
-
-        /*column widthes:
-         * STK: 3 characters
-         * BEZEICHNUNG: 41 characters
-         * ID: 3 characters
-         * PACKUNG: 29 characters
-         * PREIS EINZELN: 12 characters
-         */
-
-        //b) construct the ware information
+        
+        //determine how many rows we have to print
+        int totalRows;
+        final Statement stmt2;
         try {
-            ResultSet goods = stmt.executeQuery("SELECT * FROM" +
-                    " goods ORDER BY seller, name");
-
-            String lastSeller = null;
-            int totalAmount = 0;
-            double totalCost = 0;
-
-            int totalAmountPerSeller = 0;
-            double totalCostPerSeller = 0;
-
-            while(goods.next()) {
-                //get those wares which have to be included, ordered by seller
-                int availableAmount = 0;
-                int requiredAmount = 0;
-                int toBeBoughtAmount;
-
-                availableAmount = goods.getInt("available");
-
-                Statement stmt2 = client.getDatabaseConnection().createStatement();
-                Statement stmt3 = client.getDatabaseConnection().createStatement();
-                ResultSet orders = stmt2.executeQuery("SELECT pieces, orderId FROM " +
-                "orderParts WHERE wareId = "+goods.getInt("id"));
-
-                while(orders.next()) {
-                    ResultSet order = stmt3.executeQuery("SELECT processed FROM orders WHERE " +
-                            "id = "+orders.getInt("orderId"));
-                    order.next();
-                    if(order.getInt("processed") == 0)
-                        requiredAmount += orders.getInt("pieces");
-                }
-
-                if(availableAmount >= requiredAmount)
-                    continue;
-
-                toBeBoughtAmount = requiredAmount - availableAmount;
-
-                //build the data
-                //aa) if the seller has changed
-
-                String seller = goods.getString("seller");
-                if(!seller.equals(lastSeller)) {
-                    //if this isn't the first run
-                    //print total figures for this seller and reset them
-                    if(lastSeller != null) {
-                        out.println();
-                        out.println("GES ANZAHL: "+totalAmountPerSeller);
-                        out.printf("GES PREIS: %1$.2f€", totalCostPerSeller);
-                        out.println();
-                        out.println();
-                        totalAmountPerSeller = 0;
-                        totalCostPerSeller = 0;
-                    }
-                    out.println();
-
-                    //make a new headline
-                    out.println("===================="+
-                            seller+"====================");
-                    out.println();
-                    
-                    //set new seller
-                    lastSeller = seller;
-                }
-
-                //bb) construct column data
-                String dataString = "";
-                dataString += Util.adjustStringLength(""+toBeBoughtAmount, 3) + " | ";
-                dataString += Util.adjustStringLength(goods.getString("name"), 41) + " | ";
-                dataString += Util.adjustStringLength(goods.getString("id"), 3) + " | ";
-                dataString += Util.adjustStringLength(goods.getString("packageName")+
-                        " ("+goods.getString("packageSize")+
-                        goods.getString("packageUnit")+")", 29) + " | ";
-                dataString += goods.getDouble("realPrice");
-
-                out.println(dataString);
-
-                //cc) update total values
-                totalAmount += toBeBoughtAmount;
-                totalCost += toBeBoughtAmount*goods.getDouble("realPrice");
-                totalAmountPerSeller += toBeBoughtAmount;
-                totalCostPerSeller += toBeBoughtAmount*goods.getDouble("realPrice");
-            }
-
-            //when output is finished, print total values for last seller
-            out.println();
-            out.println("GES ANZAHL: "+totalAmountPerSeller);
-            out.printf("GES PREIS: %1$.2f€", totalCostPerSeller);
-            out.println();
-
-            //print total values for all sellers, close and exit
-            out.println();
-            out.println();
-            out.println("DATEN FÜR ALLE HÄNDLER:");
-            out.println("    GESAMT ANZAHL: "+totalAmount);
-            out.printf("    GESAMT PREIS: %1$.2f€", totalCost);
-
-            out.flush();
-            out.close();
+            stmt2 = client.getDatabaseConnection().createStatement();
+            ResultSet rowCount = stmt2.executeQuery("SELECT COUNT(*) FROM goods");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
         }
         catch(SQLException e) {
-            JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation " +
-                                "mit der Datenbank", "Netzwerkfehler",
-                                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return;
         }
+
+        //create monitor
+        final ProgressMonitor monitor = new ProgressMonitor(client,
+                "Exportiere Einkaufsliste...", null, 0, totalRows);
+
+        //Create the worker.
+        //Note that it is assumed that a print version of the text file may
+        //contain rows of up to 100 characters.
+        SwingWorker<Object, Integer> worker = new SwingWorker<Object, Integer>() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                //a) generate the header
+                out.println("SalSSuite: Warenlager");
+                out.println("EINKAUFSLISTE");
+                out.println("Generiert am "+Util.getDateString()+" um "+Util.
+                        getTimeString());
+
+                out.println();
+                out.println();
+
+                //strings containing some space characters for the header
+                String _30spaces = "";
+                String _22spaces = "";
+
+                for(int ct = 1; ct <= 30; ct++) {
+                    _30spaces += " ";
+                    if(ct <= 22)
+                        _22spaces += " ";
+                }
+
+                out.println("STK | BEZEICHNUNG "+_30spaces+"| ID  | PACKUNG "+
+                        _22spaces+"| PREIS 1 STK");
+                out.println();
+
+                /*column widthes:
+                 * STK: 3 characters
+                 * BEZEICHNUNG: 41 characters
+                 * ID: 3 characters
+                 * PACKUNG: 29 characters
+                 * PREIS EINZELN: 12 characters
+                 */
+
+                //b) construct the ware information
+                try {
+                    ResultSet goods = stmt2.executeQuery("SELECT * FROM" +
+                            " goods ORDER BY seller, name");
+
+                    String lastSeller = null;
+                    int totalAmount = 0;
+                    double totalCost = 0;
+
+                    int totalAmountPerSeller = 0;
+                    double totalCostPerSeller = 0;
+
+                    int goodsPrinted = 0;
+
+                    while(goods.next()) {
+                        if(monitor.isCanceled())
+                            break;
+
+                        goodsPrinted++;
+
+                        //get those wares which have to be included, ordered by seller
+                        int availableAmount = 0;
+                        int requiredAmount = 0;
+                        int toBeBoughtAmount;
+
+                        availableAmount = goods.getInt("available");
+
+                        Statement stmt3 = client.getDatabaseConnection().createStatement();
+                        Statement stmt4 = client.getDatabaseConnection().createStatement();
+                        ResultSet orders = stmt3.executeQuery("SELECT pieces, orderId FROM " +
+                        "orderParts WHERE wareId = "+goods.getInt("id"));
+
+                        while(orders.next()) {
+                            ResultSet order = stmt4.executeQuery("SELECT processed FROM orders WHERE " +
+                                    "id = "+orders.getInt("orderId"));
+                            order.next();
+                            if(order.getInt("processed") == 0)
+                                requiredAmount += orders.getInt("pieces");
+                        }
+
+                        if(availableAmount >= requiredAmount)
+                            continue;
+
+                        toBeBoughtAmount = requiredAmount - availableAmount;
+
+                        //build the data
+                        //aa) if the seller has changed
+
+                        String seller = goods.getString("seller");
+                        if(!seller.equals(lastSeller)) {
+                            //if this isn't the first run
+                            //print total figures for this seller and reset them
+                            if(lastSeller != null) {
+                                out.println();
+                                out.println("GES ANZAHL: "+totalAmountPerSeller);
+                                out.printf("GES PREIS: %1$.2f€", totalCostPerSeller);
+                                out.println();
+                                out.println();
+                                totalAmountPerSeller = 0;
+                                totalCostPerSeller = 0;
+                            }
+                            out.println();
+
+                            //make a new headline
+                            out.println("===================="+
+                                    seller+"====================");
+                            out.println();
+
+                            //set new seller
+                            lastSeller = seller;
+                        }
+
+                        //bb) construct column data
+                        String dataString = "";
+                        dataString += Util.adjustStringLength(""+toBeBoughtAmount, 3) + " | ";
+                        dataString += Util.adjustStringLength(goods.getString("name"), 41) + " | ";
+                        dataString += Util.adjustStringLength(goods.getString("id"), 3) + " | ";
+                        dataString += Util.adjustStringLength(goods.getString("packageName")+
+                                " ("+goods.getString("packageSize")+
+                                goods.getString("packageUnit")+")", 29) + " | ";
+                        dataString += goods.getDouble("realPrice");
+
+                        out.println(dataString);
+
+                        //cc) update total values
+                        totalAmount += toBeBoughtAmount;
+                        totalCost += toBeBoughtAmount*goods.getDouble("realPrice");
+                        totalAmountPerSeller += toBeBoughtAmount;
+                        totalCostPerSeller += toBeBoughtAmount*goods.getDouble("realPrice");
+
+                        publish(goodsPrinted);
+                    }
+
+                    //when output is finished, print total values for last seller
+                    out.println();
+                    out.println("GES ANZAHL: "+totalAmountPerSeller);
+                    out.printf("GES PREIS: %1$.2f€", totalCostPerSeller);
+                    out.println();
+
+                    //print total values for all sellers, close and exit
+                    out.println();
+                    out.println();
+                    out.println("DATEN FÜR ALLE HÄNDLER:");
+                    out.println("    GESAMT ANZAHL: "+totalAmount);
+                    out.printf("    GESAMT PREIS: %1$.2f€", totalCost);
+
+                    out.flush();
+                    out.close();
+
+                    done();
+                }
+                catch(SQLException e) {
+                    JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation " +
+                                        "mit der Datenbank", "Netzwerkfehler",
+                                        JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    return null;
+                }
+
+                return null;
+            } //end doInBackground
+
+            @Override
+            protected void process(List<Integer> chunks) {
+                monitor.setProgress(chunks.get(chunks.size()-1));
+            }
+        }; //end SwingWorker
+
+        worker.execute();
     }//GEN-LAST:event_exportList
 
     /**
@@ -380,6 +430,8 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
      * @param evt Some action event (no matter what).
      */
     private void listBought(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_listBought
+
+        setCursor(new Cursor(Cursor.WAIT_CURSOR));
 
         //choose the file
         File destFile;
@@ -406,6 +458,7 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(client, "Die gewählte Datei " +
                         "scheint keine gültige Einkaufsliste zu sein.",
                         "Dateifehler", JOptionPane.ERROR_MESSAGE);
+                setCursor(Cursor.getDefaultCursor());
                 return;
             }
 
@@ -416,6 +469,7 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(client, "Konnte gewählte Datei nicht" +
                     " öffnen.", "Dateifehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            setCursor(Cursor.getDefaultCursor());
             return;
         }
 
@@ -477,6 +531,9 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
                 e.printStackTrace();
                 return;
             }
+            finally {
+                setCursor(Cursor.getDefaultCursor());
+            }
 
         }//end for every input line
 
@@ -499,7 +556,7 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
         destFile = fileChooser.getSelectedFile();
 
         //connect to the file and print the header
-        PrintWriter out;
+        final PrintWriter out;
         try {
             out = new PrintWriter(new java.io.FileWriter(destFile));
             out.println("SalSSuite: Warenlager");
@@ -519,105 +576,152 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
                     " öffnen", "Dateifehler", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        
+        
+        //determine how many rows we have to process
+        int totalRows;
+        final Statement stmt2;
+        try {
+            stmt2 = client.getDatabaseConnection().createStatement();
+            ResultSet rowCount = stmt2.executeQuery("SELECT COUNT(*) FROM"
+                    + " realPurchases");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
 
-        //print the data
+
+        //create the ProgressMonitor
+        final ProgressMonitor monitor = new ProgressMonitor(client,
+                "Erstelle Abrechnung...", null, 0, totalRows);
+
+
+        //create the SwingWorker
 
         //Note that the data is ordered by purchase date. A 'headline' is
         //created for each date and total cost as well as total piece count
         //is printed out for each date.
-        try {
+        SwingWorker<Object, Integer> worker = new SwingWorker<Object, Integer>() {
 
-            ResultSet purchases = stmt.executeQuery("SELECT * FROM realPurchases" +
-                    " ORDER BY date, time, wareId");
+            @Override
+            protected Object doInBackground() throws Exception {
+                try {
+                    ResultSet purchases = stmt2.executeQuery("SELECT * FROM realPurchases" +
+                            " ORDER BY date, time, wareId");
 
-            String lastDate = null;
+                    String lastDate = null;
 
-            String _45equals = ""; //seperator string for date headings
-            for(int ct = 0; ct < 45; ct ++) _45equals += "=";
+                    String _45equals = ""; //seperator string for date headings
+                    for(int ct = 0; ct < 45; ct ++) _45equals += "=";
 
-            //the format string to generate the columns:
-             String formatString = "%1$5s | %2$3d | %3$67s | %4$3d | %5$5.2f";
+                    //the format string to generate the columns:
+                     String formatString = "%1$5s | %2$3d | %3$67s | %4$3d | %5$5.2f";
 
-            //the total values for one day
-            int totalPiecesPerDate = 0;
-            double totalCostPerDate = 0;
+                    //the total values for one day
+                    int totalPiecesPerDate = 0;
+                    double totalCostPerDate = 0;
 
-            //the total values for all days
-            int totalPiecesOverall = 0;
-            double totalCostOverall = 0;
-            
-            //for each data row
-            while(purchases.next()) {
+                    //the total values for all days
+                    int totalPiecesOverall = 0;
+                    double totalCostOverall = 0;
 
-                String currentDate = purchases.getString("date");
+                    int rowsProcessed = 0;
 
-                //if we have reached a new date
-                if(!currentDate.equals(lastDate)) {
-                    //print total figures for current date and reset them if
-                    //this isn't the first run
-                    if(!(lastDate == null)) {
+                    //for each data row
+                    while(purchases.next()) {
+                        if(monitor.isCanceled())
+                            break;
+                        rowsProcessed ++;
+
+                        String currentDate = purchases.getString("date");
+
+                        //if we have reached a new date
+                        if(!currentDate.equals(lastDate)) {
+                            //print total figures for current date and reset them if
+                            //this isn't the first run
+                            if(!(lastDate == null)) {
+                                out.println();
+                                out.println("GES ANZAHL: "+totalPiecesPerDate);
+                                out.printf("GES KOSTEN: %1$.2f€", totalCostPerDate);
+                                out.println();
+                                out.println();
+                                totalPiecesPerDate = 0;
+                                totalCostPerDate = 0;
+                            }
+
+                            //print heading for new date
+                            out.println(_45equals+currentDate+_45equals);
+                            lastDate = currentDate;
+                        }
+
+                        //get name
+                        Statement stmt3 = client.getDatabaseConnection().createStatement();
+
+                        ResultSet wareName = stmt3.executeQuery("SELECT name FROM goods" +
+                                " WHERE id = "+purchases.getInt("wareId"));
+                        wareName.next();
+                        String name = wareName.getString("name");
+
+                        //print all the data
+                        out.printf(formatString, purchases.getString("time"),
+                                purchases.getInt("pieces"),
+                                name,
+                                purchases.getInt("wareId"),
+                                purchases.getDouble("pricePerPiece"));
                         out.println();
-                        out.println("GES ANZAHL: "+totalPiecesPerDate);
-                        out.printf("GES KOSTEN: %1$.2f€", totalCostPerDate);
-                        out.println();
-                        out.println();
-                        totalPiecesPerDate = 0;
-                        totalCostPerDate = 0;
-                    }
 
-                    //print heading for new date
-                    out.println(_45equals+currentDate+_45equals);
-                    lastDate = currentDate;
+                        //update total values
+                        totalPiecesPerDate += purchases.getInt("pieces");
+                        totalCostPerDate += purchases.getInt("pieces")*
+                                purchases.getDouble("pricePerPiece");
+                        totalPiecesOverall += purchases.getInt("pieces");
+                        totalCostOverall += purchases.getInt("pieces")*
+                                purchases.getDouble("pricePerPiece");
+
+                        publish(rowsProcessed);
+                    }//end for each purchase
+
+                    //Print total values for last day
+                    out.println();
+                    out.println("GES ANZAHL: "+totalPiecesPerDate);
+                    out.printf("GES KOSTEN: %1$.2f€", totalCostPerDate);
+
+                    //Print overall total values
+                    out.println();
+                    out.println();
+                    out.println("SUMMEN FÜR ALLE TAGE");
+                    out.println("    ANZAHL: "+totalPiecesOverall);
+                    out.printf("    KOSTEN: %1$.2f€", totalCostOverall);
+                }
+                catch(SQLException e){
+                    JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation " +
+                            "mit der Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    return null;
                 }
 
-                //get name
-                Statement stmt2 = client.getDatabaseConnection().createStatement();
+                return null;
+            } //end doInBackground
 
-                ResultSet wareName = stmt2.executeQuery("SELECT name FROM goods" +
-                        " WHERE id = "+purchases.getInt("wareId"));
-                wareName.next();
-                String name = wareName.getString("name");
+            @Override
+            protected void process(List<Integer> chunks) {
+                monitor.setProgress(chunks.get(chunks.size()-1));
+            }
 
-                //print all the data
-                out.printf(formatString, purchases.getString("time"),
-                        purchases.getInt("pieces"),
-                        name,
-                        purchases.getInt("wareId"),
-                        purchases.getDouble("pricePerPiece"));
-                out.println();
+            @Override
+            protected void done() {
+                out.flush();
+                out.close();
+            }
+            
+        }; //end SwingWorker
 
-                //update total values
-                totalPiecesPerDate += purchases.getInt("pieces");
-                totalCostPerDate += purchases.getInt("pieces")*
-                        purchases.getDouble("pricePerPiece");
-                totalPiecesOverall += purchases.getInt("pieces");
-                totalCostOverall += purchases.getInt("pieces")*
-                        purchases.getDouble("pricePerPiece");
-
-            }//end for each purchase
-
-            //Print total values for last day
-            out.println();
-            out.println("GES ANZAHL: "+totalPiecesPerDate);
-            out.printf("GES KOSTEN: %1$.2f€", totalCostPerDate);
-
-            //Print overall total values
-            out.println();
-            out.println();
-            out.println("SUMMEN FÜR ALLE TAGE");
-            out.println("    ANZAHL: "+totalPiecesOverall);
-            out.printf("    KOSTEN: %1$.2f€", totalCostOverall);
-
-            //flush and close
-            out.flush();
-            out.close();
-        }
-        catch(SQLException e){
-            JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation " +
-                    "mit der Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-            return;
-        }
+        worker.execute();
     }//GEN-LAST:event_generateBalance
 
 
@@ -673,63 +777,132 @@ public class MagazineClientShoppingListPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Updates the visual representation of the current shopping list by querying
-     * the database and building new visual representations.
+     * Fetches all required data from the database and updates the shopping list.
+     * You may want to call this method after having created the panel
+     * because the data is not updated automatically at creation time.
+     * This method will start the update and then return, with the update
+     * running in another thread.
+     * @return The <code>SwingWorker</code> which actually performs the update,
+     * or <code>null</code> in case of an error.
      */
-    private void updateList() {
+    private SwingWorker<MagazineClientShoppingListPartPanel[],
+                MagazineClientShoppingListPartPanel> updateList() {
 
         //clear previous shopping list data
         mainPanel.removeAll();
         mainPanel.setPreferredSize(new java.awt.Dimension(0,0));
-        
+
+        //determine how many items there are in the database
+        int totalRows;
+        final Statement stmt2;
         try {
-            //query the database
-            ResultSet goods = stmt.executeQuery("SELECT id, available FROM" +
-                    " goods ORDER BY id");
-
-            //build the graphical representation
-            while(goods.next()) {
-                int wareID = goods.getInt("id");
-                int availableAmount = goods.getInt("available");
-                int requiredAmount = 0;
-
-                Statement stmt2 = client.getDatabaseConnection().createStatement();
-                Statement stmt3 = client.getDatabaseConnection().createStatement();
-                ResultSet orders = stmt2.executeQuery("SELECT pieces, orderId FROM " +
-                "orderParts WHERE wareId = "+wareID);
-
-                while(orders.next()) {
-                    ResultSet order = stmt3.executeQuery("SELECT processed FROM" +
-                            " orders WHERE id = "+orders.getInt("orderId"));
-                    order.next();
-                    if(order.getInt("processed") == 0)
-                        requiredAmount += orders.getInt("pieces");
-                }
-
-                if(availableAmount >= requiredAmount)
-                    continue;
-
-                MagazineClientShoppingListPartPanel warePanel = new
-                        MagazineClientShoppingListPartPanel(client, client.
-                        getDatabaseConnection(), wareID);
-                warePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-                mainPanel.add(warePanel);
-                mainPanel.setPreferredSize(new java.awt.Dimension((int)mainPanel.
-                        getPreferredSize().getWidth(),
-                        (int)(mainPanel.getPreferredSize().getHeight()+
-                        warePanel.getPreferredSize().getHeight())));
-            }
+            stmt2 = client.getDatabaseConnection().createStatement();
+            ResultSet rowCount = stmt2.executeQuery("SELECT COUNT(DISTINCT wareId)"
+                    + " FROM orderParts");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
         }
         catch(SQLException e) {
-            JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation" +
-                    " mit der Datenbank.", "Netzwerkfehler",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
-            return;
+            return null;
         }
 
-        validate();
-        mainPanel.repaint();
+
+        //build the ProgressMonitor
+        final ProgressMonitor monitor = new ProgressMonitor(client,
+                "Erstelle die Einkaufsliste...", null, 0, totalRows);
+
+        //build the worker
+        SwingWorker<MagazineClientShoppingListPartPanel[],
+                MagazineClientShoppingListPartPanel> worker
+                = new SwingWorker<MagazineClientShoppingListPartPanel[],
+                MagazineClientShoppingListPartPanel>() {
+
+            int rowsProcessed = 0;
+
+            @Override
+            protected MagazineClientShoppingListPartPanel[] doInBackground() throws Exception {
+                LinkedList<MagazineClientShoppingListPartPanel> panels =
+                      new LinkedList<MagazineClientShoppingListPartPanel>();
+
+                try {
+                    //query the database
+                    ResultSet goods = stmt2.executeQuery("SELECT id, available FROM" +
+                            " goods ORDER BY id");
+
+                    while(goods.next()) {
+                        if(monitor.isCanceled())
+                            break;
+
+                        int wareID = goods.getInt("id");
+                        int availableAmount = goods.getInt("available");
+                        int requiredAmount = 0;
+
+                        Statement stmt3 = client.getDatabaseConnection().createStatement();
+                        Statement stmt4 = client.getDatabaseConnection().createStatement();
+                        ResultSet orders = stmt3.executeQuery("SELECT pieces, orderId FROM " +
+                            "orderParts WHERE wareId = "+wareID);
+
+                        while(orders.next()) {
+                            ResultSet order = stmt4.executeQuery("SELECT processed FROM" +
+                                    " orders WHERE id = "+orders.getInt("orderId"));
+                            order.next();
+                            if(order.getInt("processed") == 0)
+                                requiredAmount += orders.getInt("pieces");
+                        }
+
+                        if(availableAmount >= requiredAmount)
+                            continue;
+
+                        MagazineClientShoppingListPartPanel warePanel = new
+                                MagazineClientShoppingListPartPanel(client, client.
+                                getDatabaseConnection(), wareID);
+                        warePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+                        panels.add(warePanel);
+                        publish(warePanel);
+                    }
+                }
+                catch(SQLException e) {
+                    JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation" +
+                            " mit der Datenbank.", "Netzwerkfehler",
+                            JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    done();
+                    return panels.toArray(new MagazineClientShoppingListPartPanel[0]);
+                }
+
+                done();
+                return panels.toArray(new MagazineClientShoppingListPartPanel[0]);
+            } //end doInBackground()
+
+            @Override
+            protected void done() {
+                validate();
+                mainPanel.repaint();
+                monitor.close();
+            }
+
+            @Override
+            protected void process(List<MagazineClientShoppingListPartPanel> chunks) {
+                for(MagazineClientShoppingListPartPanel panel : chunks) {
+                    rowsProcessed ++;
+                    mainPanel.add(panel);
+                    mainPanel.setPreferredSize(new java.awt.Dimension((int)mainPanel.
+                            getPreferredSize().getWidth(),
+                            (int)(mainPanel.getPreferredSize().getHeight()+
+                            panel.getPreferredSize().getHeight())));
+                }
+                validate();
+                mainPanel.repaint();
+                monitor.setProgress(rowsProcessed);
+            }
+
+        }; //end SwingWorker
+
+        worker.execute();
+        return worker;
     }
 
     //============================INNER CLASSES===============================//

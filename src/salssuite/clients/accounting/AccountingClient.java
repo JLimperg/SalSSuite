@@ -1,6 +1,7 @@
 package salssuite.clients.accounting;
 
 
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.event.ActionListener;
@@ -14,9 +15,12 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -24,6 +28,7 @@ import javax.swing.table.DefaultTableModel;
 import salssuite.util.Constants;
 import salssuite.clients.ConnectDialog;
 import salssuite.server.module.AccountingModule;
+import salssuite.util.TableModelUpdater;
 import salssuite.util.gui.FilterPanel;
 import salssuite.util.gui.HelpBrowser;
 
@@ -311,9 +316,24 @@ public class AccountingClient extends javax.swing.JFrame {
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void newEntryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newEntryButtonActionPerformed
-        AccountingEntryDialog.showAccountingEntryDialog(this, true,
+        int newEntryID = AccountingEntryDialog.showAccountingEntryDialog(this, true,
                 dbcon);
-        filterPanel.clearFilters();
+
+        //update the GUI
+        try {
+            ResultSet entry = stmt.executeQuery("SELECT * FROM accounting WHERE"
+                    + " id = "+newEntryID);
+            if(entry.next())
+                tableModel.addRow(new AccountingTableModelUpdater(this).buildTableRow(
+                        entry));
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
+
         updateCurrentSaldoDisplay();
     }//GEN-LAST:event_newEntryButtonActionPerformed
 
@@ -333,7 +353,22 @@ public class AccountingClient extends javax.swing.JFrame {
                 this, true, dbcon, ID);
 
         //update the model
-        filterPanel.clearFilters();
+        try {
+            ResultSet entry = stmt.executeQuery("SELECT * FROM accounting WHERE"
+                    + " id = "+ID);
+            entry.next();
+
+            tableModel.removeRow(row);
+            tableModel.insertRow(row, new AccountingTableModelUpdater(this).buildTableRow(
+                    entry));
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
+
         updateCurrentSaldoDisplay();
     }//GEN-LAST:event_editEntry
 
@@ -362,7 +397,7 @@ public class AccountingClient extends javax.swing.JFrame {
 
 
         //connect to the exportFile
-        PrintWriter out;
+        final PrintWriter out;
         try {
             out = new PrintWriter(new FileWriter(exportFile));
         }
@@ -373,117 +408,170 @@ public class AccountingClient extends javax.swing.JFrame {
             return;
         }
 
-
-        //-------------------------print everything---------------------------\\
-
+        //determine how many rows we have to process
+        int totalRows;
+        final Statement stmt2;
         try {
-            //SECTION 1: Overview
-            out.println("\"ÜBERSICHT\"");
-            out.println();
-
-            out.print("\"Gesamtausgaben\",");
-            ResultSet totalOut = stmt.executeQuery("SELECT SUM(outgo) AS"
-                    + " totalOut FROM accounting");
-            totalOut.next();
-            out.format("%1$s%2$.2f%3$s", "\"", totalOut.getDouble("totalOut"), "\",");
-            out.println();
-
-            out.print("\"Gesamteinnahmen\",");
-            ResultSet totalIn = stmt.executeQuery("SELECT SUM(income) AS"
-                    + " totalIn FROM accounting");
-            totalIn.next();
-            out.format("%1$s%2$.2f%3$s", "\"", totalIn.getDouble("totalIn"), "\",");
-            out.println();
-
-            out.print("\"Saldo\",");
-            ResultSet saldo = stmt.executeQuery("SELECT SUM(income + outgo) AS"
-                    + " saldo FROM accounting");
-            saldo.next();
-            out.format("%1$s%2$.2f%3$s", "\"", saldo.getDouble("saldo"), "\",");
-            out.println();
-
-            out.println();
-            out.println();
-
-            //SECTION 2: Category Overview
-            out.println("KATEGORIEN-ÜBERSICHT");
-            out.println();
-
-            out.println("\"Kategorie\",\"Gesamtausgaben\",\"Gesamteinnahmen\"");
-
-            ResultSet categories = stmt.executeQuery("SELECT DISTINCT category"
-                    + " FROM accounting ORDER BY category");
-
-            Statement stmt2 = dbcon.createStatement();
-            while(categories.next()) {
-                String category = categories.getString("category");
-
-                out.print("\""+category+"\",");
-
-                ResultSet outgo = stmt2.executeQuery("SELECT SUM(outgo) AS"
-                        + " totalOut FROM accounting WHERE category = '"+
-                        category+"'");
-                outgo.next();
-                out.format("%1$s%2$.2f%3$s", "\"", outgo.getDouble("totalOut"), "\",");
-
-                ResultSet income = stmt2.executeQuery("SELECT SUM(income) AS"
-                        + " totalIn FROM accounting WHERE category = '"+
-                        category+"'");
-                income.next();
-                out.format("%1$s%2$.2f%3$s", "\"", income.getDouble("totalIn"), "\",");
-                out.println();
-            }
-
-            out.println();
-            out.println();
-
-            //SECTION 3: Details
-            out.println("DETAILS");
-            out.println();
-
-            out.println("\"Datum\",\"Uhrzeit\",\"Beschreibung\",\"Kategorie\",\"Ausgaben\","
-                    + "\"Einnahmen\",\"Kontostand\"");
-
-            ResultSet details = stmt.executeQuery("SELECT * FROM accounting "
-                    + "ORDER BY date, time");
-
-            while(details.next()) {
-                out.print("\""+details.getString("date")+"\",");
-                out.print("\""+details.getString("time")+"\",");
-                out.print("\""+details.getString("description")+"\",");
-                out.print("\""+details.getString("category")+"\",");
-                out.format("%1$s%2$.2f%3$s", "\"", details.getDouble("outgo"), "\",");
-                out.format("%1$s%2$.2f%3$s", "\"", details.getDouble("income"), "\",");
-
-                ResultSet temporarySaldo = stmt2.executeQuery("SELECT "
-                        + "SUM(outgo + income) AS saldo FROM accounting WHERE"
-                        + " date < '"+details.getString("date")+"' OR"
-                        + " (date = '"+details.getString("date")+"' AND"
-                        + " time <= '"+details.getString("time")+"')");
-                temporarySaldo.next();
-                out.format("%1$s%2$.2f%3$s", "\"", temporarySaldo.
-                        getDouble("saldo"), "\",");
-                out.println();
-            }
-
-            out.flush();
-            out.close();
+            stmt2 = dbcon.createStatement();
+            ResultSet rowCount = stmt2.executeQuery("SELECT COUNT(*) FROM"
+                    + " accounting");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
-                    + " Datenbank.", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-            return;
-        }
-        catch(Exception e) {
-            JOptionPane.showMessageDialog(this, "Fehler beim Schreiben in die Datei:"
-                    + "<p>"+e.getMessage(), "Dateifehler",
-                    JOptionPane.ERROR_MESSAGE);
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return;
         }
 
+        //create the ProgressMonitor
+        final ProgressMonitor monitor = new ProgressMonitor(this, "Exportiere...",
+                null, 0, totalRows);
 
+        //-------------------------print everything---------------------------\\
+
+        SwingWorker<Object, Integer> worker = new SwingWorker<Object, Integer>() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                try {
+                    //SECTION 1: Overview
+                    out.println("\"ÜBERSICHT\"");
+                    out.println();
+
+                    out.print("\"Gesamtausgaben\",");
+                    ResultSet totalOut = stmt2.executeQuery("SELECT SUM(outgo) AS"
+                            + " totalOut FROM accounting");
+                    totalOut.next();
+                    out.format("%1$s%2$.2f%3$s", "\"", totalOut.getDouble("totalOut"),
+                            "\",");
+                    out.println();
+
+                    out.print("\"Gesamteinnahmen\",");
+                    ResultSet totalIn = stmt2.executeQuery("SELECT SUM(income) AS"
+                            + " totalIn FROM accounting");
+                    totalIn.next();
+                    out.format("%1$s%2$.2f%3$s", "\"", totalIn.getDouble("totalIn"),
+                            "\",");
+                    out.println();
+
+                    out.print("\"Saldo\",");
+                    ResultSet saldo = stmt2.executeQuery("SELECT SUM(income + outgo)"
+                            + "AS saldo FROM accounting");
+                    saldo.next();
+                    out.format("%1$s%2$.2f%3$s", "\"", saldo.getDouble("saldo"),
+                            "\",");
+                    out.println();
+
+                    out.println();
+                    out.println();
+
+                    //SECTION 2: Category Overview
+                    out.println("KATEGORIEN-ÜBERSICHT");
+                    out.println();
+
+                    out.println("\"Kategorie\",\"Gesamtausgaben\",\"Gesamteinnahmen\"");
+
+                    ResultSet categories = stmt2.executeQuery("SELECT DISTINCT"
+                            + " category FROM accounting ORDER BY category");
+
+                    Statement stmt3 = dbcon.createStatement();
+                    while(categories.next()) {
+                        String category = categories.getString("category");
+
+                        out.print("\""+category+"\",");
+
+                        ResultSet outgo = stmt3.executeQuery("SELECT SUM(outgo) AS"
+                                + " totalOut FROM accounting WHERE category = '"+
+                                category+"'");
+                        outgo.next();
+                        out.format("%1$s%2$.2f%3$s", "\"", outgo.getDouble("totalOut"),
+                                "\",");
+
+                        ResultSet income = stmt3.executeQuery("SELECT SUM(income) AS"
+                                + " totalIn FROM accounting WHERE category = '"+
+                                category+"'");
+                        income.next();
+                        out.format("%1$s%2$.2f%3$s", "\"", income.getDouble("totalIn"),
+                                "\",");
+                        out.println();
+                    }
+
+                    out.println();
+                    out.println();
+
+                    //SECTION 3: Details
+                    out.println("DETAILS");
+                    out.println();
+
+                    out.println("\"Datum\",\"Uhrzeit\",\"Beschreibung\","
+                            + "\"Kategorie\",\"Ausgaben\",\"Einnahmen\",\"Kontostand\"");
+
+                    ResultSet details = stmt2.executeQuery("SELECT * FROM accounting "
+                            + "ORDER BY date, time");
+
+                    int rowsProcessed = 0;
+                    while(details.next()) {
+                        if(monitor.isCanceled())
+                            break;
+
+                        out.print("\""+details.getString("date")+"\",");
+                        out.print("\""+details.getString("time")+"\",");
+                        out.print("\""+details.getString("description")+"\",");
+                        out.print("\""+details.getString("category")+"\",");
+                        out.format("%1$s%2$.2f%3$s", "\"", details.getDouble("outgo"),
+                                "\",");
+                        out.format("%1$s%2$.2f%3$s", "\"", details.getDouble("income"),
+                                "\",");
+
+                        ResultSet temporarySaldo = stmt3.executeQuery("SELECT "
+                                + "SUM(outgo + income) AS saldo FROM accounting"
+                                + " WHERE date < '"+details.getString("date")+"' OR"
+                                + " (date = '"+details.getString("date")+"' AND"
+                                + " time <= '"+details.getString("time")+"')");
+                        temporarySaldo.next();
+                        out.format("%1$s%2$.2f%3$s", "\"", temporarySaldo.
+                                getDouble("saldo"), "\",");
+                        out.println();
+
+                        rowsProcessed ++;
+                        publish(rowsProcessed);
+                    }
+
+                    done();
+                }
+                catch(SQLException e) {
+                    JOptionPane.showMessageDialog(null, "Fehler bei der Kommunikation mit der"
+                            + " Datenbank.", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    return null;
+                }
+                catch(Exception e) {
+                    JOptionPane.showMessageDialog(null, "Fehler beim Schreiben in die Datei:"
+                            + "<p>"+e.getMessage(), "Dateifehler",
+                            JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    return null;
+                }
+
+                return null;
+            } //end doInBackground()
+
+            @Override
+            protected void process(List<Integer> chunks) {
+                monitor.setProgress(chunks.get(chunks.size()-1));
+            }
+
+            @Override
+            protected void done() {
+                out.flush();
+                out.close();
+            }
+
+        }; //end SwingWorker
+        
+        worker.execute();
     }//GEN-LAST:event_export
 
     private void help(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_help
@@ -547,50 +635,16 @@ public class AccountingClient extends javax.swing.JFrame {
         //Delete all old rows from the model
         tableModel.setRowCount(0);
 
-        //Construct new rows
-        Object[] rowData = new Object[8];
-        Statement stmt2;
+        //Determine how many rows we have to process. Note that in case we
+        //are processing filtered data, it is very likely that the number
+        //of rows determined here does not correspond to the number
+        //of rows that are actually in the ResultSet.
+        int totalRows;
         try {
-            stmt2 = dbcon.createStatement();
-        }
-        catch(SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
-                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-            return;
-        }
-
-        try {
-            while(rs.next()) {
-                rowData[0] = rs.getInt("id");
-                rowData[1] = rs.getString("description");
-                rowData[2] = rs.getString("date");
-                rowData[3] = rs.getString("time");
-                rowData[4] = rs.getString("category");
-
-                double income = rs.getDouble("income");
-                if(income == 0.0)
-                    rowData[5] = "";
-                else
-                    rowData[5] = String.format("%1$.2f", rs.getDouble("income"));
-
-                double outgo = rs.getDouble("outgo");
-                if(outgo == 0.0)
-                    rowData[6] = "";
-                else
-                    rowData[6] = String.format("%1$.2f", rs.getDouble("outgo"));
-
-                String thisDate = rs.getString("date");
-                String thisTime = rs.getString("time");
-                ResultSet saldo = stmt2.executeQuery("SELECT SUM(outgo + income) "
-                        + "AS saldo "
-                        + "FROM accounting "
-                        + "WHERE date < '"+thisDate+"' OR "
-                        + "(date = '"+thisDate+"' AND time <= '"+thisTime+"')");
-                saldo.next();
-                rowData[7] = String.format("%1$.2f", saldo.getDouble("saldo"));
-                tableModel.addRow(rowData);
-            }
+            ResultSet rowCount = stmt.executeQuery("SELECT COUNT(*) FROM"
+                    + " accounting");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
@@ -598,6 +652,10 @@ public class AccountingClient extends javax.swing.JFrame {
             e.printStackTrace();
             return;
         }
+
+        //construct new rows
+        new AccountingTableModelUpdater(this).update(rs, totalRows);
+        
 
         //do layout stuff
         Font font = table.getGraphics().getFont();
@@ -626,6 +684,8 @@ public class AccountingClient extends javax.swing.JFrame {
      */
     private void updateCurrentSaldoDisplay() {
 
+        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+
         try {
             ResultSet saldo = stmt.executeQuery("SELECT SUM(outgo + income)"
                     + "AS saldo FROM accounting");
@@ -636,7 +696,64 @@ public class AccountingClient extends javax.swing.JFrame {
         catch(SQLException e) {
             currentSaldoDisplay.setText("FEHLER");
         }
+        finally {
+            setCursor(Cursor.getDefaultCursor());
+        }
     }
 
     //============================INNER CLASSES===============================//
+
+    private class AccountingTableModelUpdater extends TableModelUpdater {
+
+        public AccountingTableModelUpdater(AccountingClient client) {
+            super(client, tableModel, "Lade die Einträge...");
+            this.client = client;
+        }
+
+        AccountingClient client;
+
+        @Override
+        public Object[] buildTableRow(ResultSet data) {
+            try {
+                Object[] rowData = new Object[8];
+                Statement stmt2 = dbcon.createStatement();
+
+                rowData[0] = data.getInt("id");
+                rowData[1] = data.getString("description");
+                rowData[2] = data.getString("date");
+                rowData[3] = data.getString("time");
+                rowData[4] = data.getString("category");
+
+                double income = data.getDouble("income");
+                if(income == 0.0)
+                    rowData[5] = "";
+                else
+                    rowData[5] = String.format("%1$.2f", data.getDouble("income"));
+
+                double outgo = data.getDouble("outgo");
+                if(outgo == 0.0)
+                    rowData[6] = "";
+                else
+                    rowData[6] = String.format("%1$.2f", data.getDouble("outgo"));
+
+                String thisDate = data.getString("date");
+                String thisTime = data.getString("time");
+                ResultSet saldo = stmt2.executeQuery("SELECT SUM(outgo + income) "
+                        + "AS saldo "
+                        + "FROM accounting "
+                        + "WHERE date < '"+thisDate+"' OR "
+                        + "(date = '"+thisDate+"' AND time <= '"+thisTime+"')");
+                saldo.next();
+                rowData[7] = String.format("%1$.2f", saldo.getDouble("saldo"));
+
+                return rowData;
+            }
+            catch(SQLException e) {
+                JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation mit der"
+                        + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
 }

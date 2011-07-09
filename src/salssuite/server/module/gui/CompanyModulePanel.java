@@ -18,10 +18,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import salssuite.util.TableModelUpdater;
 import salssuite.util.gui.ExceptionDisplayDialog;
 import salssuite.util.gui.FilterPanel;
 
@@ -92,7 +96,6 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         filterDummyPanel.add(filterPanel, BorderLayout.CENTER);
 
         //update the list
-        filterPanel.clearFilters();
         if(parent != null)
             parent.pack();
         validate();
@@ -250,10 +253,25 @@ public class CompanyModulePanel extends javax.swing.JPanel{
 
     private void addCompany(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCompany
         //let user enter new company
-        CompanyEditingDialog.showCompanyEditingDialog(parent, true,
+        int newCompanyID = CompanyEditingDialog.showCompanyEditingDialog(parent, true,
                 -1, dbcon);
+
+        if(newCompanyID <= 0) //means the user has cancelled
+            return;
+        
         //update the GUI
-        filterPanel.clearFilters();
+        try {
+            ResultSet company = stmt.executeQuery("SELECT * FROM companies"
+                    + " WHERE id = "+newCompanyID);
+            company.next();
+            tableModel.addRow(new CompanyTableModelUpdater().buildTableRow(company));
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
     }//GEN-LAST:event_addCompany
 
     private void editCompany_button(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editCompany_button
@@ -281,6 +299,9 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         if(option != JOptionPane.YES_OPTION)
             return;
 
+        //TODO it should be checked if another user has edited the selected
+        //company in the meantime
+
         //delete
         try {
             stmt.executeUpdate("UPDATE citizens SET companyId = -1, isBoss = 0," +
@@ -295,7 +316,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         }
 
         //update GUI
-        filterPanel.clearFilters();
+        tableModel.removeRow(selectedIndex);
     }//GEN-LAST:event_deleteCompany
 
     private void generateCompanyList(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateCompanyList
@@ -314,7 +335,7 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         destFile = fileChooser.getSelectedFile();
 
         //open the file and print the header
-        PrintWriter out;
+        final PrintWriter out;
         try {
             out = new PrintWriter(new java.io.FileWriter(destFile));
             out.println("\"Nummer\",\"Name\",\"Produkt\",\"Raum\","
@@ -326,70 +347,16 @@ public class CompanyModulePanel extends javax.swing.JPanel{
                     + "Datei nicht öffnen", "Dateifehler", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        //generate the list
+        
+        //determine how many rows we will have to process
+        int totalRows;
+        final Statement stmt2;
         try {
-            Statement stmt2 = dbcon.createStatement();
-            ResultSet companies = stmt.executeQuery("SELECT id,name,"
-                    + "room,jobs,productDescription FROM companies ORDER BY id");
-
-            while(companies.next()) {
-                LinkedList<String> rows = new LinkedList<String>();
-
-                int ID = companies.getInt("id");
-                int employeeCount = 0;
-
-                //generate the new row
-                String firstRow = "";
-                firstRow += ID + ",";
-                firstRow += "\"" + companies.getString("name").replace("\"", "'") + "\",";
-                firstRow += "\"" + companies.getString("productDescription").replace("\"", "'") + "\",";
-                firstRow += "\"" + companies.getString("room").replace("\"", "'") + "\",";
-
-                //get the founder
-                ResultSet founder = stmt2.executeQuery("SELECT forename,surname"
-                        + " FROM citizens WHERE companyId = "+ID+" AND"
-                        + " isBoss = 1");
-                if(founder.next()) {
-                    employeeCount ++;
-                    String forename = founder.getString("forename").replace("\"", "'").
-                            split(" ")[0];
-                    String surname = founder.getString("surname").replace("\"", "'");
-                    firstRow += "\"" + forename + " " + surname + "\",";
-                }
-                else
-                    firstRow += ",";
-
-                //get the employees
-                ResultSet employees = stmt2.executeQuery("SELECT forename, surname"
-                        + " FROM citizens WHERE companyId = "+ID+" AND"
-                        + " isBoss = 0 ORDER BY surname");
-                boolean firstEmployee = true;
-                while(employees.next()) {
-                    employeeCount ++;
-                    String forename = employees.getString("forename").replace("\"", "'").
-                            split(" ")[0];
-                    String surname = employees.getString("surname").replace("\"", "'");
-                    if(firstEmployee) {
-                        firstRow += "\"" + forename + " " + surname + "\"";
-                        firstEmployee = false;
-                    }
-                    else {
-                        rows.add(",,,,,\"" + forename + " " + surname + "\"");
-                    }
-                }
-
-                //add the number of free rows
-                firstRow += ","+(companies.getInt("jobs") - employeeCount);
-
-                //print everything
-                out.println(firstRow);
-                for(String row : rows)
-                    out.println(row);
-            }
-
-            out.flush();
-            
+            stmt2 = dbcon.createStatement();
+            ResultSet rowCount = stmt2.executeQuery("SELECT COUNT(*) FROM"
+                    + " companies");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
@@ -398,9 +365,114 @@ public class CompanyModulePanel extends javax.swing.JPanel{
             return;
         }
 
-        //confirm generation
-        JOptionPane.showMessageDialog(this, "Betriebsliste gespeichert.",
-                "Erfolg", JOptionPane.INFORMATION_MESSAGE);
+        //create the ProgressMonitor
+        final ProgressMonitor monitor = new ProgressMonitor(parent, "Erstelle die"
+                + " Betriebsliste...", null, 0, totalRows);
+
+        //create the SwingWorker
+        SwingWorker<Object, Integer> worker = new SwingWorker<Object, Integer>() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                try {
+                    Statement stmt3 = dbcon.createStatement();
+                    ResultSet companies = stmt2.executeQuery("SELECT id,name,"
+                            + "room,jobs,productDescription FROM companies ORDER BY id");
+
+                    int rowsProcessed = 0;
+
+                    while(companies.next()) {
+                        if(monitor.isCanceled())
+                            break;
+
+                        LinkedList<String> rows = new LinkedList<String>();
+
+                        int ID = companies.getInt("id");
+                        int employeeCount = 0;
+
+                        //generate the new row
+                        String firstRow = "";
+                        firstRow += ID + ",";
+                        firstRow += "\"" + companies.getString("name").
+                                replace("\"", "'") + "\",";
+                        firstRow += "\"" + companies.getString("productDescription").
+                                replace("\"", "'") + "\",";
+                        firstRow += "\"" + companies.getString("room").
+                                replace("\"", "'") + "\",";
+
+                        //get the founder
+                        ResultSet founder = stmt3.executeQuery("SELECT forename,surname"
+                                + " FROM citizens WHERE companyId = "+ID+" AND"
+                                + " isBoss = 1");
+                        if(founder.next()) {
+                            employeeCount ++;
+                            String forename = founder.getString("forename").
+                                    replace("\"", "'").
+                                    split(" ")[0];
+                            String surname = founder.getString("surname").
+                                    replace("\"", "'");
+                            firstRow += "\"" + forename + " " + surname + "\",";
+                        }
+                        else
+                            firstRow += ",";
+
+                        //get the employees
+                        ResultSet employees = stmt3.executeQuery("SELECT forename,"
+                                + "surname FROM citizens WHERE companyId = "+ID+" AND"
+                                + " isBoss = 0 ORDER BY surname");
+                        boolean firstEmployee = true;
+                        while(employees.next()) {
+                            employeeCount ++;
+                            String forename = employees.getString("forename").
+                                    replace("\"", "'").
+                                    split(" ")[0];
+                            String surname = employees.getString("surname").
+                                    replace("\"", "'");
+                            if(firstEmployee) {
+                                firstRow += "\"" + forename + " " + surname + "\"";
+                                firstEmployee = false;
+                            }
+                            else {
+                                rows.add(",,,,,\"" + forename + " " + surname + "\"");
+                            }
+                        }
+
+                        //add the number of free rows
+                        firstRow += ","+(companies.getInt("jobs") - employeeCount);
+
+                        //print everything
+                        out.println(firstRow);
+                        for(String row : rows)
+                            out.println(row);
+
+                        rowsProcessed ++;
+                        publish(rowsProcessed);
+                    }
+                }
+                catch(SQLException e) {
+                    JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation mit der"
+                            + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    return null;
+                }
+
+                return null;
+            } //end doInBackground()
+
+            @Override
+            protected void process(List<Integer> chunks) {
+                monitor.setProgress(chunks.get(chunks.size()-1));
+            }
+
+            @Override
+            protected void done() {
+                out.flush();
+                out.close();
+            }
+
+        }; //end SwingWorker
+
+        worker.execute();
     }//GEN-LAST:event_generateCompanyList
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
@@ -459,7 +531,24 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         CompanyEditingDialog.showCompanyEditingDialog(
                 parent, true, ID, dbcon);
 
-        filterPanel.clearFilters();
+        //TODO it should be checked if another user has edited the company
+        //in the meantime
+
+        //update the GUI
+        try {
+            ResultSet company = stmt.executeQuery("SELECT * FROM companies"
+                    + " WHERE id = "+ID);
+            company.next();
+            tableModel.removeRow(selectedIndex);
+            tableModel.insertRow(selectedIndex, new CompanyTableModelUpdater().
+                    buildTableRow(company));
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
     }
 
     /**
@@ -470,13 +559,44 @@ public class CompanyModulePanel extends javax.swing.JPanel{
         //get filtered List
         ResultSet filteredData = filterPanel.getFilteredData();
 
+        //erase all the old data
         tableModel.setRowCount(0);
 
-        //construct new information
+        //Determine how many rows we have to process. Note that in case we
+        //are processing filtered data, it is very likely that the number
+        //of rows determined here does not correspond to the number
+        //of rows that are actually in the ResultSet.
+        int totalRows;
         try {
-            while(filteredData.next()) {
+            Statement stmt2 = dbcon.createStatement();
+            ResultSet rowCount = stmt2.executeQuery("SELECT COUNT(*) FROM"
+                    + " companies");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
 
-                int ID = filteredData.getInt("id");
+        //construct new information
+        new CompanyTableModelUpdater().update(filteredData, totalRows);
+    }
+
+    //============================INNER CLASSES===============================//
+
+    private class CompanyTableModelUpdater extends TableModelUpdater {
+
+        public CompanyTableModelUpdater() {
+            super(parent, tableModel, "Lade die Betriebsdaten...");
+        }
+
+        @Override
+        public Object[] buildTableRow(ResultSet data) {
+            try {
+                int ID = data.getInt("id");
 
                 //get the founder
                 String founder;
@@ -490,22 +610,25 @@ public class CompanyModulePanel extends javax.swing.JPanel{
                             citizens.getString("surname");
                 else
                     founder = "UNBEKANNT";
-                
-                tableModel.addRow(new Object[] {
-                    ID,
-                    filteredData.getString("name"),
-                    filteredData.getString("room"),
-                    filteredData.getString("productDescription"),
-                    founder
-                });
+
+                //build the row
+                Object[] row = new Object[5];
+                row[0] = ID;
+                row[1] = data.getString("name");
+                row[2] = data.getString("room");
+                row[3] = data.getString("productDescription");
+                row[4] = founder;
+
+                return row;
+            }
+            catch(SQLException e) {
+                JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation"
+                        + "mit der Datenbank", "Netzwerkfehler",
+                        JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                return null;
             }
         }
-        catch(SQLException e){
-            JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation "
-                    + "mit der Datenbank.", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-        }
-    }
 
-    //============================INNER CLASSES===============================//
+    }
 }

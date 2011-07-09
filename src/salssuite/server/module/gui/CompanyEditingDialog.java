@@ -515,15 +515,30 @@ public class CompanyEditingDialog extends javax.swing.JDialog {
      * holding the 'companies' table.
      * @param companyID The ID of a new company, if one should be created. If
      * a company should be modified, pass a negative number here.
+     * @return The ID of the company that has been created or modified. See
+     * {@link #getCompanyID} for details.
      * @see salssuite.server.Server#buildServerDatabase
      */
-    public static void showCompanyEditingDialog(java.awt.Frame parent, boolean modal,
+    public static int showCompanyEditingDialog(java.awt.Frame parent, boolean modal,
             int companyID, Connection databaseConnection) {
 
         CompanyEditingDialog dia = new CompanyEditingDialog(parent, modal,
                 companyID,databaseConnection);
 
         dia.setVisible(true);
+        return dia.getCompanyID();
+    }
+
+    /**
+     * Returns the ID of the company that is being modified or has been created.
+     * This method should only be called after the dialog has been disposed,
+     * otherwise it might return nonsensical values.
+     * @return The ID of the company that has been edited or created, or
+     * <code>0</code> if the dialog was being used to create a new company and
+     * the user has cancelled the operation.
+     */
+    public int getCompanyID() {
+        return companyID;
     }
 
     /**

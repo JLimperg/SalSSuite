@@ -14,14 +14,18 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import salssuite.util.TableModelUpdater;
 import salssuite.util.Util;
 import salssuite.util.gui.FilterPanel;
 
@@ -31,7 +35,8 @@ import salssuite.util.gui.FilterPanel;
  * (table 'citizens').
  * <p>
  * The panel displays a <code>JTable</code> which exactly reflects the database
- * table. The user can edit all values except for IDs, add and remove citizens.
+ * table. The user can edit all values except for IDs and company
+ * IDs, moreover they can add and remove citizens.
  * @author Jannis Limperg
  * @see salssuite.server.Server#buildServerDatabase
  */
@@ -46,6 +51,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
     public CitizenModulePanel(Connection dbcon) {
         initComponents();
         try {
+            this.dbcon = dbcon;
             stmt = dbcon.createStatement();
         }
         catch(SQLException e) {
@@ -110,14 +116,12 @@ public class CitizenModulePanel extends javax.swing.JPanel {
 
         filterPanel.addActionListener(new ActionListener() {
            public void actionPerformed(java.awt.event.ActionEvent ev) {
-               inputSent();
+               updateTableModel();
            }
         });
 
         filterPanelPlaceholder.setLayout(new java.awt.BorderLayout());
         filterPanelPlaceholder.add(filterPanel, java.awt.BorderLayout.CENTER);
-
-        filterPanel.clearFilters();
     }
 
     /** This method is called from within the constructor to
@@ -371,7 +375,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
         destFile = fileChooser.getSelectedFile();
 
         //open the file and print the header
-        PrintWriter out;
+        final PrintWriter out;
         try {
             out = new PrintWriter(new java.io.FileWriter(destFile));
             out.println("\"Nummer\",\"Nachname\",\"Vorname\",\"Klasse\","
@@ -384,18 +388,14 @@ public class CitizenModulePanel extends javax.swing.JPanel {
             return;
         }
 
-        //print the data
+        //determine how many rows we will have to process
+        int totalRows;
+        final Statement stmt2;
         try {
-            ResultSet data = stmt.executeQuery("SELECT * FROM citizens ORDER BY id");
-            while(data.next()) {
-                String line = "";
-                line += data.getInt("id") + ",";
-                line += "\"" + data.getString("surname") + "\",";
-                line += "\"" + data.getString("forename") + "\",";
-                line += "\"" + data.getString("form") + "\",";
-                line += data.getInt("companyId");
-                out.println(line);
-            }
+            stmt2 = dbcon.createStatement();
+            ResultSet rowCount = stmt2.executeQuery("SELECT COUNT(*) FROM citizens");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
@@ -404,11 +404,57 @@ public class CitizenModulePanel extends javax.swing.JPanel {
             return;
         }
 
-        out.flush();
+        //create the ProgressMonitor
+        final ProgressMonitor monitor = new ProgressMonitor(
+                (java.awt.Frame)getTopLevelAncestor(), "Erstelle die Liste...",
+                null, 0, totalRows);
 
-        //display a success message
-        JOptionPane.showMessageDialog(this, "Liste erstellt.", "Erfolg",
-                JOptionPane.INFORMATION_MESSAGE);
+        //create the SwingWorker
+        SwingWorker<Object, Integer> worker = new SwingWorker<Object, Integer>() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                //print the data
+                try {
+                    ResultSet data = stmt2.executeQuery("SELECT * FROM citizens "
+                            + "ORDER BY id");
+                    while(data.next()) {
+                        if(monitor.isCanceled())
+                            break;
+                        
+                        String line = "";
+                        line += data.getInt("id") + ",";
+                        line += "\"" + data.getString("surname") + "\",";
+                        line += "\"" + data.getString("forename") + "\",";
+                        line += "\"" + data.getString("form") + "\",";
+                        line += data.getInt("companyId");
+                        out.println(line);
+                    }
+                }
+                catch(SQLException e) {
+                    JOptionPane.showMessageDialog(null, "Fehler bei der Kommunikation mit der"
+                            + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    return null;
+                }
+
+                return null;
+            }//end doInBackground()
+
+            @Override
+            protected void process(List<Integer> chunks) {
+                monitor.setProgress(chunks.get(chunks.size()-1));
+            }
+
+            @Override
+            protected void done() {
+                out.flush();
+                out.close();
+            }
+
+        };//end SwingWorker
+
+        worker.execute();
     }//GEN-LAST:event_generateCitizenList
 
 
@@ -433,6 +479,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
     //===============================FIELDS===================================//
     
     Statement stmt;
+    Connection dbcon;
 
     FilterPanel filterPanel;
     DefaultTableModel tableModel;
@@ -455,32 +502,35 @@ public class CitizenModulePanel extends javax.swing.JPanel {
      * Generates a new table model according to the data filtered by the
      * filterPanel.
      */
-    private void inputSent() {
+    private void updateTableModel() {
         //fetch information from filter panel
         ResultSet data = filterPanel.getFilteredData();
 
         //delete all rows from the table model
         tableModel.setRowCount(0);
 
-        //fill the model
+        //Determine how many rows we have to process. Note that in case we
+        //are processing filtered data, it is very likely that the number
+        //of rows determined here does not correspond to the number
+        //of rows that are actually in the ResultSet.
+        int totalRows;
+        Statement stmt2;
         try {
-            while(data.next()) {
-                Object[] row = new Object[5];
-                row[0] = data.getInt("id");
-                row[1] = data.getString("forename");
-                row[2] = data.getString("surname");
-                row[3] = data.getString("form");
-                row[4] = data.getInt("companyId");
-
-                tableModel.addRow(row);
-            }
+            stmt2 = dbcon.createStatement();
+            ResultSet rowCount = stmt2.executeQuery("SELECT COUNT(*) FROM"
+                    + " citizens");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
         }
         catch(SQLException e) {
-            JOptionPane.showMessageDialog(null, "Fehler bei der Kommunikation mit der"
-                    + "Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return;
         }
+
+        //fill the model
+        new CitizenTableModelUpdater().update(data, totalRows);
     }
 
     /**
@@ -560,4 +610,34 @@ public class CitizenModulePanel extends javax.swing.JPanel {
     }
 
     //============================INNER CLASSES===============================//
+
+    private class CitizenTableModelUpdater extends TableModelUpdater {
+
+        public CitizenTableModelUpdater() {
+            super((java.awt.Frame)getTopLevelAncestor(), tableModel,
+                    "Lade die Bürgerdaten...");
+        }
+
+        @Override
+        public Object[] buildTableRow(ResultSet data) {
+            Object[] row = new Object[5];
+
+            try {
+                row[0] = data.getInt("id");
+                row[1] = data.getString("forename");
+                row[2] = data.getString("surname");
+                row[3] = data.getString("form");
+                row[4] = data.getInt("companyId");
+            }
+            catch(SQLException e) {
+                JOptionPane.showMessageDialog((java.awt.Frame)getTopLevelAncestor(),
+                        "Fehler bei der Kommunikation mit der"
+                        + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                return null;
+            }
+
+            return row;
+        }
+    }
 }

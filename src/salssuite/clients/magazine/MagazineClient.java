@@ -95,11 +95,17 @@ public class MagazineClient extends javax.swing.JFrame {
         } while(serverAddress == null);
 
 
-        //add GUI elements
         try {
-            addTab(new MagazineClientWarePanel(this), "Waren");
-            addTab(new MagazineClientOrdersPanel(this), "Bestellungen");
-            addTab(new MagazineClientShoppingListPanel(this), "Einkaufsliste");
+            //add GUI elements
+            MagazineClientWarePanel warePanel = new MagazineClientWarePanel(this);
+            addTab(warePanel, "Waren");
+            MagazineClientOrdersPanel ordersPanel = new MagazineClientOrdersPanel(this);
+            addTab(ordersPanel, "Bestellungen");
+            MagazineClientShoppingListPanel shoppingListPanel =
+                    new MagazineClientShoppingListPanel(this);
+            addTab(shoppingListPanel, "Einkaufsliste");
+
+            pack();
         }
         catch(Exception e){
             JOptionPane.showMessageDialog(this, "Konnte Daten nicht initialisieren." +
@@ -108,8 +114,6 @@ public class MagazineClient extends javax.swing.JFrame {
             e.printStackTrace();
             System.exit(1);
         }
-
-        pack();
 
         //usability tweaks
         addWindowListener(new WindowAdapter() {

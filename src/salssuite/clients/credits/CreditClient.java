@@ -31,6 +31,7 @@ import javax.swing.table.TableCellEditor;
 import salssuite.clients.ConnectDialog;
 import salssuite.server.module.CreditModule;
 import salssuite.util.Constants;
+import salssuite.util.TableModelUpdater;
 import salssuite.util.Util;
 import salssuite.util.gui.FilterPanel;
 import salssuite.util.gui.HelpBrowser;
@@ -348,7 +349,7 @@ public class CreditClient extends javax.swing.JFrame {
             ResultSet credit = stmt.executeQuery("SELECT * FROM credits WHERE"
                     + " id = "+newCreditID);
             credit.next();
-            buildTableRow(credit);
+            constructTableRow(credit);
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
@@ -508,13 +509,18 @@ public class CreditClient extends javax.swing.JFrame {
         //erase all data in the table model
         tableModel.setRowCount(0);
 
-        //obtain new data
+        //Determine how many rows we might have. Note that if we operate on
+        //filtered data is it highly likely that the actual number of rows
+        //is smaller.
         ResultSet data = filterPanel.getFilteredData();
 
         try {
-            while(data.next()) {
-                buildTableRow(data);
-            }
+            int totalRows;
+            ResultSet rowCount = stmt.executeQuery("SELECT COUNT(*) FROM credits");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
+
+            new CreditTableModelUpdater(this).update(data, totalRows);
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
@@ -535,11 +541,12 @@ public class CreditClient extends javax.swing.JFrame {
      * @param rowData One row of the database. Must contain all columns of
      * the 'credits' database table.
      * @throws SQLException if some error occurs while accessing rowData.
+     * @return An array of Objects representing on row in the TableModel.
      */
-    private void buildTableRow(ResultSet rowData) throws SQLException {
+    private Object[] constructTableRow(ResultSet rowData) throws SQLException {
         //if user only wants to see those credits which are not yet paid
         if(onlyOpenFilter.isSelected() && rowData.getInt("paid") == 1)
-            return;
+            return null;
 
         //set basic data
         Object[] row = new Object[tableModel.getColumnCount()];
@@ -563,7 +570,7 @@ public class CreditClient extends javax.swing.JFrame {
                 startDay, endDay);
 
         if(amount < 0) //indicates that this row should not be displayed
-            return;
+            return null;
 
         //set rest of data
         row[2] = amount;
@@ -576,7 +583,7 @@ public class CreditClient extends javax.swing.JFrame {
         row[6] = rowData.getString("startDay");
         row[7] = rowData.getString("endDay");
 
-        tableModel.addRow(row);
+        return row;
     }
 
     /**
@@ -1034,6 +1041,27 @@ public class CreditClient extends javax.swing.JFrame {
                     (int)cellPanel.getPreferredSize().getHeight());
 
             return cellPanel;
+        }
+
+    }
+
+    private class CreditTableModelUpdater extends TableModelUpdater {
+
+        public CreditTableModelUpdater(CreditClient client) {
+            super(client, tableModel, "Lade Kreditdaten...");
+        }
+
+        @Override
+        public Object[] buildTableRow(ResultSet data) {
+            try {
+                return constructTableRow(data);
+            }
+            catch(SQLException e) {
+                JOptionPane.showMessageDialog(null, "Fehler bei der Kommunikation mit der"
+                        + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                return null;
+            }
         }
 
     }

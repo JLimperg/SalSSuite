@@ -441,12 +441,15 @@ public class AccountingEntryDialog extends javax.swing.JDialog {
      * @param modal Whether the dialog should be modal or not.
      * @param dbcon A connection to the database where the accounting
      * information is stored.
+     * @return The ID of the created/modified credit. See {@link #getCreditID}
+     * for details.
      */
-    public static void showAccountingEntryDialog(java.awt.Frame parent,
+    public static int showAccountingEntryDialog(java.awt.Frame parent,
             boolean modal, Connection dbcon) {
         AccountingEntryDialog dia = new AccountingEntryDialog(parent, modal,
                 dbcon);
         dia.setVisible(true);
+        return dia.getCreditID();
     }
 
     /**
@@ -457,12 +460,25 @@ public class AccountingEntryDialog extends javax.swing.JDialog {
      * @param dbcon A connection to the database where the accounting
      * information is stored.
      * @param ID The ID of the entry to be edited.
+     * @return The ID of the created/modified credit. See {@link #getCreditID}
+     * for details.
      */
-    public static void showAccountingEntryDialog(java.awt.Frame parent,
+    public static int showAccountingEntryDialog(java.awt.Frame parent,
             boolean modal, Connection dbcon, int ID) {
         AccountingEntryDialog dia = new AccountingEntryDialog(parent, modal,
                 dbcon, ID);
         dia.setVisible(true);
+        return dia.getCreditID();
+    }
+
+    /**
+     * Returns the ID of the credit that has been created or modified.
+     * @return The created or modified credit's ID, or <code>-1</code> if
+     * the dialog has been disposed irregularly (f.ex. by being cancelled by
+     * the user).
+     */
+    public int getCreditID() {
+        return ID;
     }
 
     /**
@@ -486,6 +502,16 @@ public class AccountingEntryDialog extends javax.swing.JDialog {
                         + "-"+outgo+","
                         + "'"+category+"'"
                         + ")");
+
+                /*
+                 * Determine the new credit's ID. Note that there is a very low
+                 * chance that the following mechanism will return the ID of
+                 * a credit that has been created by another user almost in
+                 * the same instant.
+                 */
+                ResultSet newID = stmt.executeQuery("SELECT MAX(ID) FROM accounting");
+                newID.next();
+                ID = newID.getInt(1);
             }
 
             //if an existing entry should be updated

@@ -11,8 +11,12 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import salssuite.util.gui.FilterPanel;
 import salssuite.util.Util;
 
@@ -32,7 +36,8 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
     private static final long serialVersionUID = 1;
 
     /**
-     * Sole constructor.
+     * Sole constructor. Note that this panel will not fetch data from the
+     * database at creation time. Use {@link #updateList} for that purpose.
      * @param client The client this panel is part of.
      * @throws IllegalArgumentException if <code>client</code> is <code>null</code>.
      */
@@ -94,8 +99,6 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
                updateList();
            }
         });
-
-        filterPanel.clearFilters();
     }
 
     /** This method is called from within the constructor to
@@ -298,52 +301,112 @@ public class MagazineClientOrdersPanel extends javax.swing.JPanel {
     //==============================METHODS===================================//
 
     /**
-     * Updates the visual representation of the orders.
+     * Fetches the complete orders data from the database and updates the
+     * visual representation. This method will start the update and then
+     * return, with the update running in another thread.
+     * @return The <code>SwingWorker</code> which actually performs the
+     * update.
      */
-    private void updateList() {
+    private SwingWorker<MagazineClientOrderPanel[], MagazineClientOrderPanel>
+            updateList() {
 
         //remove all order panels
         mainPanel.removeAll();
-
-        //construct data for new orders    
-        ResultSet visibleOrdersIDs = filterPanel.getFilteredData();
         
+        //get the number of rows to display
+        int totalRows;
         try {
-            while(visibleOrdersIDs.next()) {
-
-                int orderID = visibleOrdersIDs.getInt("id");
-                int companyID;
-
-                ResultSet order;
-                order = stmt.executeQuery("SELECT companyId, paid FROM orders" +
-                        " WHERE id = "+orderID);
-                order.next();
-
-                //if the user wants to see only those orders that are not paid yet:
-                if(onlyNotpaidFilter.isSelected() && order.getInt("paid") == 1)
-                    continue;
-
-                companyID = order.getInt("companyId");
-
-                MagazineClientOrderPanel panel = new MagazineClientOrderPanel(client,
-                        orderID, companyID);
-                panel.setBorder(BorderFactory.createLineBorder(java.awt.Color.BLACK, 2));
-
-                mainPanel.add(panel);
-            }
+            ResultSet numberOfRows = stmt.executeQuery("SELECT COUNT(id)"
+                    + " FROM orders");
+            numberOfRows.next();
+            totalRows = numberOfRows.getInt(1);     
         }
         catch(SQLException e) {
-            JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation" +
-                    " mit der Datenbank.", "Netzwerkfehler", JOptionPane.
-                    ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
-            return;
+            return null;
         }
 
-        validate();
-        mainPanel.repaint();
+        //build the ProgressMonitor
+        final ProgressMonitor monitor = new ProgressMonitor(client, "Lade die Bestellungen",
+                null, 0, totalRows);
+
+        //build the worker
+        SwingWorker<MagazineClientOrderPanel[], MagazineClientOrderPanel> worker
+                = new SwingWorker<MagazineClientOrderPanel[], MagazineClientOrderPanel>() {
+
+            int rowsProcessed = 0;
+
+            @Override
+            protected MagazineClientOrderPanel[] doInBackground() throws Exception {
+                ResultSet visibleOrdersIDs = filterPanel.getFilteredData();
+                LinkedList<MagazineClientOrderPanel> panels =
+                        new  LinkedList<MagazineClientOrderPanel>();
+
+                try {
+                    while(visibleOrdersIDs.next()) {
+                        if(monitor.isCanceled())
+                            break;
+
+                        int orderID = visibleOrdersIDs.getInt("id");
+                        int companyID;
+
+                        ResultSet order;
+                        order = stmt.executeQuery("SELECT companyId, paid FROM"
+                                + " orders WHERE id = "+orderID);
+                        order.next();
+
+                        //if the user wants to see only those orders that are not paid yet:
+                        if(onlyNotpaidFilter.isSelected() && order.getInt("paid")
+                                == 1)
+                            continue;
+
+                        companyID = order.getInt("companyId");
+
+                        MagazineClientOrderPanel panel = new MagazineClientOrderPanel(
+                                client, orderID, companyID);
+                        panel.setBorder(BorderFactory.createLineBorder(
+                                java.awt.Color.BLACK, 2));
+
+                        publish(panel);
+                    }
+                }
+                catch(SQLException e) {
+                    JOptionPane.showMessageDialog(client, "Fehler bei der Kommunikation" +
+                            " mit der Datenbank.", "Netzwerkfehler", JOptionPane.
+                            ERROR_MESSAGE);
+                    e.printStackTrace();
+                    done();
+                    return panels.toArray(new MagazineClientOrderPanel[0]);
+                }
+
+                done();
+                return panels.toArray(new MagazineClientOrderPanel[0]);
+            } //end doInBackground()
+
+            @Override
+            protected void done() {
+                validate();
+                mainPanel.repaint();
+                monitor.close();
+            }
+
+            @Override
+            protected void process(List<MagazineClientOrderPanel> chunks) {
+                for(MagazineClientOrderPanel panel : chunks) {
+                    rowsProcessed ++;
+                    mainPanel.add(panel);
+                }
+                validate();
+                mainPanel.repaint();
+                monitor.setProgress(rowsProcessed);
+            }
+
+        }; //end SwingWorker
+
+        worker.execute();
+        return worker;
     }
     //============================INNER CLASSES===============================//
-
-    
 }
