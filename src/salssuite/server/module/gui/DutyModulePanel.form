@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" ?>
 
-<Form version="1.3" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[750, 500]"/>
@@ -27,9 +27,14 @@
                   <Component id="filterPanelPlaceholder" alignment="0" pref="726" max="32767" attributes="2"/>
                   <Component id="jScrollPane1" alignment="0" pref="726" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jButton2" min="-2" max="-2" attributes="0"/>
+                      <Component id="logAllOutButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="458" max="32767" attributes="0"/>
-                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                      <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="exportNotLoggedOutButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="exportLazyButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -39,16 +44,20 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="334" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="jScrollPane1" pref="325" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="filterPanelPlaceholder" min="-2" pref="79" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jButton2" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="logAllOutButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="refreshButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="exportNotLoggedOutButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="exportLazyButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
           </Group>
       </Group>
     </DimensionLayout>
@@ -66,7 +75,7 @@
             <Property name="autoCreateRowSorter" type="boolean" value="true"/>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
               <Table columnCount="4" rowCount="0">
-                <Column editable="false" title="B&#xfc;rger-ID" type="java.lang.String"/>
+                <Column editable="false" title="B&#xfc;rger-ID" type="java.lang.Integer"/>
                 <Column editable="false" title="Datum" type="java.lang.String"/>
                 <Column editable="true" title="Uhrzeit" type="java.lang.String"/>
                 <Column editable="false" title="Typ" type="java.lang.String"/>
@@ -123,7 +132,7 @@
         </DimensionLayout>
       </Layout>
     </Container>
-    <Component class="javax.swing.JButton" name="jButton2">
+    <Component class="javax.swing.JButton" name="logAllOutButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Alle B&#xfc;rger ausloggen"/>
       </Properties>
@@ -131,12 +140,28 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logAllOut"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="jButton1">
+    <Component class="javax.swing.JButton" name="refreshButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Aktualisieren"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reloadData"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="exportNotLoggedOutButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Nicht ausgeloggte exportieren"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportNotLoggedOutToCsv"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="exportLazyButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="B&#xfc;rger mit zu geringer Anwesenheitszeit exportieren"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportLazyCitizensToCsv"/>
       </Events>
     </Component>
   </SubComponents>

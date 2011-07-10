@@ -81,8 +81,6 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
 
         port = project.getPort();
         portInput.setText(""+port);
-        attendanceTime = project.getAttendanceTime();
-        attendanceTimeInput.setText(""+attendanceTime);
         outputPath = project.getOutputPath();
         if(outputPath == null)
             outputPathDisplay.setText("Nicht gesetzt.");
@@ -141,17 +139,14 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         nameInput = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
-        attendanceTimeInput = new javax.swing.JTextField();
         outputPathDisplay = new javax.swing.JLabel();
         inputPathDisplay = new javax.swing.JLabel();
         outputPathButton = new javax.swing.JButton();
         inputPathButton = new javax.swing.JButton();
         portInput = new javax.swing.JTextField();
-        jLabel13 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
 
@@ -228,20 +223,11 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel8.setText("Anwesenheitsdauer");
-
         jLabel10.setText("Ausgabepfad");
 
         jLabel11.setText("Eingabepfad");
 
         jLabel12.setText("Server-Port");
-
-        attendanceTimeInput.setToolTipText("Zeit, die jeder Bürger mindestens im Staat verbringen muss, in Minuten.");
-        attendanceTimeInput.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                selectAllHandler(evt);
-            }
-        });
 
         outputPathDisplay.setText("Bitte wählen.");
 
@@ -269,8 +255,6 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
                 selectAllHandler(evt);
             }
         });
-
-        jLabel13.setText("Minuten");
 
         jButton3.setText("OK");
         jButton3.setToolTipText("Projekt erstellen");
@@ -326,15 +310,10 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
                                     .addComponent(startDayYInput, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel8)
                                     .addComponent(jLabel10)
                                     .addComponent(jLabel11))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGap(54, 54, 54)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(attendanceTimeInput, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jLabel13))
                                     .addComponent(outputPathDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
                                     .addComponent(inputPathDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)))
                             .addGroup(layout.createSequentialGroup()
@@ -380,12 +359,7 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
                     .addComponent(jLabel6)
                     .addComponent(jLabel7)
                     .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(attendanceTimeInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel13))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(44, 44, 44)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -404,14 +378,14 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(portInput, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton4)
                     .addComponent(jButton3))
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {attendanceTimeInput, endDayDInput, endDayMInput, endDayYInput, nameInput, portInput, startDayDInput, startDayMInput, startDayYInput});
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {endDayDInput, endDayMInput, endDayYInput, nameInput, portInput, startDayDInput, startDayMInput, startDayYInput});
 
         layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jButton3, jButton4});
 
@@ -476,7 +450,6 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_chosePathes
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField attendanceTimeInput;
     private javax.swing.JTextField endDayDInput;
     private javax.swing.JTextField endDayMInput;
     private javax.swing.JTextField endDayYInput;
@@ -488,14 +461,12 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JTextField nameInput;
     private javax.swing.JButton outputPathButton;
     private javax.swing.JLabel outputPathDisplay;
@@ -514,21 +485,9 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
     String projName;
     GregorianCalendar startDay;
     GregorianCalendar endDay;
-    int attendanceTime;
     File outputPath;
     File inputPath;
     int port;
-
-    /**
-     * Returns the minimum time every citizen has to stay in the state. It is
-     * ensured that this is a positive <code>int</code>. The time is given in
-     * minutes.
-     * @return The attendance time, in minutes.
-     * @see salssuite.server.Project
-     */
-    public int getAttendanceTime() {
-        return attendanceTime;
-    }
 
     /**
      * Returns the end day of the project. It is ensured that (a) this is a
@@ -621,7 +580,6 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
                     dia.projName,
                     dia.startDay,
                     dia.endDay,
-                    dia.attendanceTime,
                     dia.port,
                     dia.inputPath,
                     dia.outputPath
@@ -660,7 +618,6 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
                     dia.projName,
                     dia.startDay,
                     dia.endDay,
-                    dia.attendanceTime,
                     dia.port,
                     dia.inputPath,
                     dia.outputPath
@@ -697,19 +654,11 @@ public class ProjectSetupDialog extends javax.swing.JDialog {
         }
 
         try {
-            attendanceTime = Integer.parseInt(attendanceTimeInput.getText());
             port = Integer.parseInt(portInput.getText());
         }
         catch(NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Fehler: Anwesenheitszeit und " +
-                    "Server-Port müssen ganze Zahlen sein.", "Ungültige Eingabe",
-                    JOptionPane.ERROR_MESSAGE);
-            return(false);
-        }
-
-        if(attendanceTime < 0) {
-            JOptionPane.showMessageDialog(this, "Fehler: Anwesenheitszeit muss " +
-                    "positiv sein.", "Ungültige Eingabe",
+            JOptionPane.showMessageDialog(this, "Fehler: Der Server-Port muss"
+                    + " eine positive ganze Zahl sein.", "Ungültige Eingabe",
                     JOptionPane.ERROR_MESSAGE);
             return(false);
         }

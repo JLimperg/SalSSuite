@@ -20,7 +20,6 @@ import salssuite.util.Util;
  * <li>the port on which the Derby database is started</li>
  * <li>the output and input path</li>
  * <li>the days on which the project starts and ends</li>
- * <li>the 'attendance time' every citizen must stay inside the state</li>
  * </ul>
  * 
  * <p>
@@ -50,11 +49,6 @@ import salssuite.util.Util;
  * <p>
  * <b>start day & end day</b> - The days on which the project starts and ends
  * respectively.
- * <p>
- * <b>attendance time</b> - Usually, a citizen has to stay inside the state
- * for a certain time. This amount of time can be entered here, and the
- * {@link salssuite.server.module.DutyModule} can then test if this requirement
- * was fulfilled by a certain citizen or not.
  * @author Jannis Limperg
  */
 public class Project {
@@ -82,9 +76,6 @@ public class Project {
     //project's name
     String projectName;
 
-    //attendance time
-    int attendanceTime;
-
 
 //=============================CONSTRUCTORS===================================\\
 
@@ -95,8 +86,6 @@ public class Project {
      * @param name The project's name.
      * @param startDay The day on which the project starts.
      * @param endDay The day on which the project ends.
-     * @param attendanceTime The minimum time each citizen has to stay in the state,
-     * in minutes.
      * @param port The port the server should run on. Must be a positive
      * <code>int</code>.
      * @param inputPath The path where the input comes from. Must be an existing
@@ -115,11 +104,10 @@ public class Project {
      * </ul>
      */
     public Project(String name, GregorianCalendar startDay,
-            GregorianCalendar endDay, int attendanceTime,
+            GregorianCalendar endDay,
             int port, File inputPath, File outputPath) throws ProjectException {
 
         this.projectName = name; this.startDay = startDay; this.endDay= endDay;
-        this.attendanceTime = attendanceTime;
         this.port = port; this.inputPath = inputPath; this.outputPath = outputPath;
 
         if(inputPath != null && !inputPath.isDirectory() && inputPath.exists())
@@ -168,7 +156,6 @@ public class Project {
      * &lt;project_data&gt;<br/>
      * --- &lt;project_name&gt;...&lt;/project_name&gt;<br/>
      * --- &lt;project_durance&gt;...&lt;/project_durance&gt;<br/>
-     * --- &lt;attendance_time&gt;...&lt;/attendance_time&gt;<br/>
      * --- &lt;output_path&gt;...&lt;/output_path&gt;<br/>
      * --- &lt;input_path&gt;...&lt;/input_path&gt;<br/>
      * --- &lt;currency_symbol&gt;...&lt;/currency_symbol&gt;<br/>
@@ -202,7 +189,6 @@ public class Project {
             //data
             out.println("\t<project_name>"+projectName+"</project_name>");
             out.println("\t<project_durance>"+projectDurance+"</project_durance>");
-            out.println("\t<attendance_time>"+attendanceTime+"</attendance_time>");
             out.println("\t<output_path>"+outputPath.getAbsolutePath()+"</output_path>");
             if(inputPath != null)
                 out.println("\t<input_path>"+inputPath.getAbsolutePath()+"</input_path>");
@@ -267,8 +253,6 @@ public class Project {
                     projectName = tmp.getTextContent();
                 else if (name.equals("project_durance"))
                     projectDurance = Integer.parseInt(content);
-                else if (name. equals("attendance_time"))
-                    attendanceTime = Integer.parseInt(content);
                 else if (name.equals("output_path"))
                     outputPath = new File(content);
                 else if (name.equals("input_path"))
@@ -326,22 +310,6 @@ public class Project {
 
 
     //GETTER/SETTER
-
-    /**
-     * Returns the minimum time each citizen has to stay in the state, in minutes.
-     * @return The attendance time.
-     */
-    public int getAttendanceTime() {
-        return attendanceTime;
-    }
-
-    /**
-     * Sets the minimum time each citizen has to stay in the state (in minutes).
-     * @param attendanceTime The new attendance time.
-     */
-    public void setAttendanceTime(int attendanceTime) {
-        this.attendanceTime = attendanceTime;
-    }
 
     /**
      * Returns the day on which this project ends.

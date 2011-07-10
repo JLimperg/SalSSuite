@@ -1565,21 +1565,10 @@ public class Server {
             name = proj.getProjectName();
         }
 
-        //parse attendance time and port
-        int attendanceTime;
         int port;
 
         while(true) {
             try {
-                System.out.println("Minimale Anwesenheitszeit in Minuten: ");
-                
-                String attendanceTimeInput = in.nextLine();
-
-                if(attendanceTimeInput.equals("quit"))
-                    return null;
-
-                attendanceTime = Integer.parseInt(attendanceTimeInput);
-
                 if(editProject)
                     System.out.println("Bitte beachten Sie, dass eine Änderung des"
                             + " Ports erst bei einem Neustart des Servers"
@@ -1597,24 +1586,16 @@ public class Server {
                 else
                     port = Integer.parseInt(portInput);
 
-                if(attendanceTime < 0) {
-                    System.out.println("Fehler: Anwesenheitszeit muss positiv sein.");
-                    
-                    continue;
-                }
-
                 if(port < 0) {
                     System.out.println("Fehler: Port muss positiv sein.");
-                    
                     continue;
                 }
 
                 break;
             }
             catch(NumberFormatException e) {
-                System.out.println("Fehler: Anwesenheitszeit und Server-Port müssen ganze Zahlen"
+                System.out.println("Fehler: Server-Port muss eine ganze Zahl"
                         + "sein.");
-                
                 continue;
             }
         }
@@ -1756,7 +1737,7 @@ public class Server {
         }
 
         try {
-            return new Project(name, startDay, endDay, attendanceTime, port,
+            return new Project(name, startDay, endDay, port,
                     inputPath, outputPath);
         }
         catch(ProjectException e) {

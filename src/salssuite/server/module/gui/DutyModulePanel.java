@@ -9,13 +9,23 @@ package salssuite.server.module.gui;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import salssuite.util.TableModelUpdater;
 import salssuite.util.gui.FilterPanel;
 import salssuite.util.Util;
 
@@ -58,7 +68,7 @@ public class DutyModulePanel extends javax.swing.JPanel {
                     dbcon,
                     new String[] {"citizenId, date, time, type"},
                     "logs",
-                    "date, citizenId",
+                    "date, citizenId, time",
                     new String[] {}, //string fields
                     new String[] {"citizenId"}, //number fields
                     new String[] {"date"}, //date fields
@@ -78,15 +88,12 @@ public class DutyModulePanel extends javax.swing.JPanel {
 
         filterPanel.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent ev) {
-               inputSent();
+               updateTableModel();
            }
         });
 
         filterPanelPlaceholder.setLayout(new BorderLayout());
         filterPanelPlaceholder.add(filterPanel, BorderLayout.CENTER);
-
-        //update GUI
-        filterPanel.clearFilters();
     }
 
     /** This method is called from within the constructor to
@@ -101,8 +108,10 @@ public class DutyModulePanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
         filterPanelPlaceholder = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        logAllOutButton = new javax.swing.JButton();
+        refreshButton = new javax.swing.JButton();
+        exportNotLoggedOutButton = new javax.swing.JButton();
+        exportLazyButton = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(750, 500));
 
@@ -118,7 +127,7 @@ public class DutyModulePanel extends javax.swing.JPanel {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
                 false, false, true, false
@@ -147,17 +156,31 @@ public class DutyModulePanel extends javax.swing.JPanel {
             .addGap(0, 79, Short.MAX_VALUE)
         );
 
-        jButton2.setText("Alle Bürger ausloggen");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        logAllOutButton.setText("Alle Bürger ausloggen");
+        logAllOutButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 logAllOut(evt);
             }
         });
 
-        jButton1.setText("Aktualisieren");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        refreshButton.setText("Aktualisieren");
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reloadData(evt);
+            }
+        });
+
+        exportNotLoggedOutButton.setText("Nicht ausgeloggte exportieren");
+        exportNotLoggedOutButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportNotLoggedOutToCsv(evt);
+            }
+        });
+
+        exportLazyButton.setText("Bürger mit zu geringer Anwesenheitszeit exportieren");
+        exportLazyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportLazyCitizensToCsv(evt);
             }
         });
 
@@ -171,23 +194,30 @@ public class DutyModulePanel extends javax.swing.JPanel {
                     .addComponent(filterPanelPlaceholder, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton2)
+                        .addComponent(logAllOutButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 458, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
+                        .addComponent(refreshButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(exportNotLoggedOutButton)
+                        .addGap(18, 18, 18)
+                        .addComponent(exportLazyButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(27, 27, 27)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(filterPanelPlaceholder, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
-                    .addComponent(jButton1))
-                .addContainerGap())
+                    .addComponent(logAllOutButton)
+                    .addComponent(refreshButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(exportNotLoggedOutButton)
+                    .addComponent(exportLazyButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -203,59 +233,369 @@ public class DutyModulePanel extends javax.swing.JPanel {
         if(option != JOptionPane.YES_OPTION)
             return;
 
+        //determine how many rows we will have to process
+        int totalRows;
+        final Statement stmt1;
         try {
-            //for the following operations we need special statements
-            Statement stmt1 = dbcon.createStatement();
-            Statement stmt2 = dbcon.createStatement(
-                    ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_READ_ONLY);
-
-            //get all citizens
-            ResultSet citizens = stmt1.executeQuery("SELECT id FROM citizens");
-
-            //log them out
-            while(citizens.next()) {
-
-                int ID = citizens.getInt("id");
-                ResultSet logs = stmt2.executeQuery("SELECT type FROM logs WHERE" +
-                        " citizenId = "+ID);
-
-                if(!logs.next()) //meaning no logging activity for this citizen
-                    continue;
-
-                logs.last();
-                if(logs.getInt("type") == 1) {
-                    stmt2.executeUpdate("INSERT INTO logs VALUES (" +
-                            ID + ", "+
-                            "'"+Util.getDateString()+"', "+
-                            "'"+Util.getTimeString()+"', "+
-                            "0"+
-                            ")");
-                }
-            }
+            stmt1 = dbcon.createStatement();
+            ResultSet rowCount = stmt1.executeQuery("SELECT COUNT(*) FROM citizens");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
         }
         catch(SQLException e) {
-            JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation "
-                    + "mit der Datenbank.", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return;
         }
 
-        //display success message
-        JOptionPane.showMessageDialog(parent, "Alle Bürger ausgeloggt.",
-                "Erfolg", JOptionPane.INFORMATION_MESSAGE);
+        //create the ProgressMonitor
+        final ProgressMonitor monitor = new ProgressMonitor(
+                (java.awt.Frame)getTopLevelAncestor(), "Logge alle aus...",
+                null, 0, totalRows);
+
+        //create the SwingWorker
+        SwingWorker<Object, Integer> worker = new SwingWorker<Object, Integer>() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                try {
+                    //for the following operations we need special statements
+                    Statement stmt2 = dbcon.createStatement(
+                            ResultSet.TYPE_SCROLL_INSENSITIVE,
+                            ResultSet.CONCUR_READ_ONLY);
+
+                    //get all citizens
+                    ResultSet citizens = stmt1.executeQuery("SELECT id FROM "
+                            + "citizens");
+
+                    //log them out
+                    int rowsProcessed = 0;
+                    while(citizens.next()) {
+
+                        if(monitor.isCanceled())
+                            break;
+                        rowsProcessed ++;
+                        publish(rowsProcessed);
+
+                        int ID = citizens.getInt("id");
+                        ResultSet logs = stmt2.executeQuery("SELECT type FROM "
+                                + "logs WHERE citizenId = "+ID);
+
+                        if(!logs.next()) //meaning no logging activity for this citizen
+                            continue;
+
+                        logs.last();
+                        if(logs.getInt("type") == 1) {
+                            stmt2.executeUpdate("INSERT INTO logs VALUES (" +
+                                    ID + ", "+
+                                    "'"+Util.getDateString()+"', "+
+                                    "'"+Util.getTimeString()+"', "+
+                                    "0"+
+                                    ")");
+                        }
+                    }
+                }
+                catch(SQLException e) {
+                    JOptionPane.showMessageDialog(parent, "Fehler bei der "
+                            + "Kommunikation mit der Datenbank.", "Netzwerkfehler",
+                            JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                }
+
+                return null;
+            }//end doInBackground()
+
+            @Override
+            protected void process(List<Integer> chunks) {
+                monitor.setProgress(chunks.get(chunks.size()-1));
+            }
+
+        };//end SwingWorker
+
+        worker.execute();
     }//GEN-LAST:event_logAllOut
 
     private void reloadData(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadData
         filterPanel.clearFilters();
     }//GEN-LAST:event_reloadData
 
+    private void exportLazyCitizensToCsv(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportLazyCitizensToCsv
+        //ask for the minimum attendance time
+        int tmpAttendanceTime;
+        do {
+            String attendanceTimeInput = JOptionPane.showInputDialog(parent,
+                    "<html>Wie viel Zeit muss jeder Bürger<br/>mindestens im Staat"
+                    + " verbringen<br/>(in Minuten)?</html>",
+                    "Anwesenheitszeit eingeben", JOptionPane.QUESTION_MESSAGE);
+            try {
+                tmpAttendanceTime = Integer.parseInt(attendanceTimeInput);
+                if(tmpAttendanceTime <= 0)
+                    continue;
+                break;
+            }
+            catch(NumberFormatException e) {}
+        } while(true);
+
+        //A bit of a hacky workaround, I know...
+        final int attendanceTime = tmpAttendanceTime;
+
+        //let the user choose a file
+        File exportFile;
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Csv-Dateien",
+                "csv"));
+        fileChooser.setDialogTitle("Datei für den Export wählen");
+        int option = fileChooser.showSaveDialog(getTopLevelAncestor());
+        if(option != JFileChooser.APPROVE_OPTION)
+            return;
+        exportFile = fileChooser.getSelectedFile();
+
+        //connect to the file and set up the directories
+        final PrintWriter out;
+        exportFile.getParentFile().mkdirs();
+
+        try {
+            exportFile.createNewFile();
+            out = new PrintWriter(new java.io.FileWriter(exportFile));
+        }
+        catch (IOException e) {
+            JOptionPane.showMessageDialog(parent, "Konnte die gewählte"
+                    + " Datei nicht zum Schreiben öffnen.",
+                    "Dateifehler", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        //determine how many rows we have to process
+        int totalRows;
+        try {
+            Statement stmt = dbcon.createStatement();
+            ResultSet rowCount = stmt.executeQuery("SELECT COUNT(*) FROM "
+                    + "citizens");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
+
+        //create the ProgressMonitor
+        final ProgressMonitor monitor = new ProgressMonitor(parent,
+                "Erstelle die Liste...", null, 0, totalRows);
+
+        //create the SwingWorker
+        SwingWorker<Object, Integer> worker = new SwingWorker<Object, Integer>() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                //print the header
+                out.println("\"Klasse\",\"Nachname\",\"Vorname\",\"Tag\","
+                        + "\"Differenz zur minimalen Anwesenheitszeit\"");
+
+                try {
+                    //get all citizens
+                    Statement stmt = dbcon.createStatement();
+                    ResultSet citizens = stmt.executeQuery("SELECT "
+                            + "id,form,surname,forename FROM citizens ORDER BY "
+                            + "form,surname,forename");
+                    Statement stmt2 = dbcon.createStatement();
+
+                    //get all days for which we have data
+                    ResultSet days = stmt2.executeQuery("SELECT DISTINCT date FROM"
+                            + " logs");
+                    LinkedList<String> dates = new LinkedList<String>();
+                    while(days.next())
+                        dates.add(days.getString("date"));
+
+                    //process each citizen
+                    int rowsProcessed = 0;
+                    while(citizens.next()) {
+                        if(monitor.isCanceled())
+                            break;
+                        
+                        rowsProcessed ++;
+                        publish(rowsProcessed);
+
+                        //process each day
+                        for(String day : dates) {
+                            int timePassed = getTimePassedInState(citizens.getInt(
+                                    "id"), day);
+
+                            if(timePassed < 0) //means an error has occured.
+                                return null;
+
+                            if(timePassed >= attendanceTime)
+                                continue;
+
+                            String row = "";
+                            row += "\"" + citizens.getString("form") + "\",";
+                            row += "\"" + citizens.getString("surname") + "\",";
+                            row += "\"" + citizens.getString("forename") + "\",";
+                            row += "\"" + day + "\",";
+                            row += attendanceTime - timePassed;
+                            out.println(row);
+                        }
+                    }
+                }
+                catch(SQLException e) {
+                        JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation "
+                                + "mit der Datenbank.", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    return null;
+                }
+                
+                return null;
+            }//end doInBackground()
+
+            @Override
+            protected void process(List<Integer> chunks) {
+                monitor.setProgress(chunks.get(chunks.size()-1));
+            }
+
+            @Override
+            protected void done() {
+                out.flush();
+                out.close();
+            }
+
+        };//end SwingWorker
+
+        worker.execute();
+    }//GEN-LAST:event_exportLazyCitizensToCsv
+
+    private void exportNotLoggedOutToCsv(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportNotLoggedOutToCsv
+        //let the user choose a file
+        File exportFile;
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Csv-Dateien",
+                "csv"));
+        fileChooser.setDialogTitle("Datei für den Export wählen");
+        int option = fileChooser.showSaveDialog(getTopLevelAncestor());
+        if(option != JFileChooser.APPROVE_OPTION)
+            return;
+        exportFile = fileChooser.getSelectedFile();
+
+        //connect to the file and set up the directories
+        final PrintWriter out;
+        exportFile.getParentFile().mkdirs();
+
+        try {
+            exportFile.createNewFile();
+            out = new PrintWriter(new java.io.FileWriter(exportFile));
+        }
+        catch (IOException e) {
+            JOptionPane.showMessageDialog(parent, "Konnte die gewählte"
+                    + " Datei nicht zum Schreiben öffnen.",
+                    "Dateifehler", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        //determine how many rows we have to process
+        int totalRows;
+        try {
+            Statement stmt = dbcon.createStatement();
+            ResultSet rowCount = stmt.executeQuery("SELECT COUNT(*) FROM "
+                    + "citizens");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
+
+        //create the ProgressMonitor
+        final ProgressMonitor monitor = new ProgressMonitor(parent,
+                "Erstelle die Liste...", null, 0, totalRows);
+
+        //create the SwingWorker
+        SwingWorker<Object, Integer> worker = new SwingWorker<Object, Integer>() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                //print the header
+                out.println("\"Klasse\",\"Nachname\",\"Vorname\",\"Tag\",");
+
+                //get citizen who are currently not logged out and print the data
+                try {
+                    Statement stmt = dbcon.createStatement();
+                    ResultSet citizens = stmt.executeQuery("SELECT id,"
+                            + "forename,surname,form FROM citizens ORDER BY form,"
+                            + "surname,forename");
+
+                    int rowsProcessed = 0;
+                    while(citizens.next()) {
+                        if(monitor.isCanceled())
+                            break;
+
+                        Statement stmt2 = dbcon.createStatement(
+                                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                ResultSet.CONCUR_READ_ONLY);
+                        ResultSet logs = stmt2.executeQuery("SELECT time,type,date"
+                                + " FROM logs WHERE citizenId = "+citizens.getInt(
+                                "id") + " ORDER BY date,time,type");
+                        logs.last();
+
+                        rowsProcessed ++;
+                        publish(rowsProcessed);
+
+                        if(logs.getRow() == 0) //means citizen has never logged in
+                            continue;
+
+                        if(logs.getInt("type") == 0) //means citizen is properly
+                            continue;                //logged out
+
+                        String row = "";
+                        row += "\"" + citizens.getString("form") + "\",";
+                        row += "\"" + citizens.getString("surname") + "\",";
+                        row += "\"" + citizens.getString("forename") + "\",";
+                        row += "\"" + logs.getString("date") + "\"";
+                        out.println(row);
+                    }
+                }
+                catch(SQLException e) {
+                    JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation "
+                            + "mit der Datenbank.", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    return null;
+                }
+
+                return null;
+            } //end doInBackground()
+
+            @Override
+            protected void process(List<Integer> chunks) {
+                monitor.setProgress(chunks.get(chunks.size()-1));
+            }
+
+            @Override
+            protected void done() {
+                out.flush();
+                out.close();
+            }
+
+        }; //end SwingWorker
+
+        worker.execute();
+    }//GEN-LAST:event_exportNotLoggedOutToCsv
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton exportLazyButton;
+    private javax.swing.JButton exportNotLoggedOutButton;
     private javax.swing.JPanel filterPanelPlaceholder;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton logAllOutButton;
+    private javax.swing.JButton refreshButton;
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
 
@@ -273,38 +613,118 @@ public class DutyModulePanel extends javax.swing.JPanel {
     //================================METHODS===================================
 
     /**
-     * Constructs a visual representation of the data filtered by the user.
+     * Returns the time a citizen has passed in the state on the specified
+     * day. If the citizen is not logged out yet, the time is computed using the
+     * current time.
+     * @param citizenID The citizen's ID.
+     * @param thisDay The date for which the time passed in the state should be
+     * obtained. This string must be formatted according to the rules of
+     * {@link salssuite.util.Util#getDateString}.
+     * @return The time passed in the state, or -1 in case of a database error.
+     * If this occurs, a warning message is displayed to the user.
      */
-    private void inputSent() {
+    private int getTimePassedInState(int citizenID, String thisDay) {
 
-        ResultSet data = filterPanel.getFilteredData();
-        
-        tableModel.setRowCount(0);
-
-        //create new data
         try {
-            while(data.next()) {
+            Statement stmt = dbcon.createStatement(
+                    ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY);
+            ResultSet logs = stmt.executeQuery("SELECT time, type FROM" +
+                    " logs WHERE citizenId = "+citizenID+" AND date = '"+
+                    thisDay+"'");
 
-                String date = data.getString("date");
-                String time = data.getString("time");
-                int ID = data.getInt("citizenId");
+            int timePassed = 0;
 
-                String type;
-                if(data.getInt("type") == 0)
-                    type = "logout";
-                else
-                    type = "login";
+            while(logs.next()) {
+                String[] logTime = Util.parseTimeString(logs.getString("time"));
 
-                tableModel.addRow(new Object[]{
-                    ID, date, time, type
-                });
+                if(logs.isLast() && logs.getInt("type") == 1) //citizen still logged in
+                    return timePassed;
+
+                if(logs.getInt("type") == 0)   //log-out-event: do nothing
+                    continue;
+
+                logs.next(); //now points to next log-out-event
+
+                String[] logOutTime = Util.parseTimeString(logs.getString("time"));
+
+                timePassed += (Integer.parseInt(logOutTime[0]) -
+                        Integer.parseInt(logTime[0]))*60;
+                timePassed += (Integer.parseInt(logOutTime[1]) -
+                        Integer.parseInt(logTime[1]));
             }
+            
+            return timePassed;
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation "
                     + "mit der Datenbank.", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            return -1;
+        }
+    }
+
+    /**
+     * Constructs a visual representation of the data filtered by the user.
+     */
+    private void updateTableModel() {
+        ResultSet data = filterPanel.getFilteredData();
+
+        //delete all the old data
+        tableModel.setRowCount(0);
+
+        //Determine how many rows we have to process. Note that in case we
+        //are processing filtered data, it is very likely that the number
+        //of rows determined here does not correspond to the number
+        //of rows that are actually in the ResultSet.
+        int totalRows;
+        try {
+            Statement stmt = dbcon.createStatement();
+            ResultSet rowCount = stmt.executeQuery("SELECT COUNT(*) FROM"
+                    + " logs");
+            rowCount.next();
+            totalRows = rowCount.getInt(1);
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
             return;
+        }
+
+        //create new data
+        new DutyTableModelUpdater().update(data, totalRows);
+    }
+
+    //===========================INNER CLASSES==================================
+
+    private class DutyTableModelUpdater extends TableModelUpdater {
+
+        public DutyTableModelUpdater() {
+            super(parent, tableModel, "Lade Zolldaten...");
+        }
+
+
+        @Override
+        public Object[] buildTableRow(ResultSet data) {
+            try {
+                Object[] row = new Object[4];
+                row[0] = data.getInt("citizenId");
+                row[1] = data.getString("date");
+                row[2] = data.getString("time");
+
+                if(data.getInt("type") == 0)
+                    row[3] = "logout";
+                else
+                    row[3] = "login";
+                return row;
+            }
+            catch(SQLException e) {
+                JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation mit der"
+                        + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                return null;
+            }
         }
     }
 }

@@ -216,30 +216,6 @@ public class Constants {
      */
     public File generalDatabasePath;
 
-
-    //================================DUTY FILES================================
-    /**
-     * The output directory of the duty module.
-     */
-    public File dutyOutputPath;
-    /**
-     * The input directory of the duty module. By default this is the same as
-     * the server input directory.
-     */
-    public File dutyInputPath;
-    /**
-     * The file to which the duty module writes the citizens who were 'lazy'. This
-     * means that these citizens have not passed enough time in the state,
-     * according to the given attendance time (see {@link salssuite.server.Project}).
-     */
-    public File dutyLazyCitizensFile;
-    /**
-     * The file to which the duty module exports those citizens who were not
-     * logged out when generating the output. This is useful at the end of a
-     * day to see who did not care about logging, duty and such.
-     */
-    public File dutyNotLoggedOutFile;
-
     
     //===========================MAGAZINE FILES=================================
 
@@ -405,15 +381,7 @@ public class Constants {
         else
             citizenInputFile = null;
         serverPasswordFile = new File(programmeDir, "/install");
-        generalDatabasePath = new File(generalServerDataPath, "/Datenbanken/");
-
-        //DUTY
-        dutyOutputPath = new File(outputPath, "/Zoll/");
-        dutyInputPath = inputPath;
-        dutyLazyCitizensFile = new File(dutyOutputPath, "/anwesenheitszeit_" +
-                "unterschritten.csv");
-        dutyNotLoggedOutFile = new File(dutyOutputPath, "/nicht_ausgeloggt.csv");
-        
+        generalDatabasePath = new File(generalServerDataPath, "/Datenbanken/");       
 
         //MAGAZINE
         magazineInputPath = inputPath;
