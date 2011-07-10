@@ -17,7 +17,7 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import salssuite.util.Constants;
-import salssuite.clients.NameToIDClient;
+import salssuite.clients.Converter;
 import salssuite.clients.ConnectDialog;
 import salssuite.server.module.DutyModule;
 import salssuite.util.Util;
@@ -91,8 +91,8 @@ public class DutyClient extends javax.swing.JFrame {
             }
         }//end while
 
-        //display NameToIDClient (probably useful for duty officers)
-        NameToIDClient.displayNameToIDClient(this, theserver[0], Integer.parseInt(
+        //display Converter (probably useful for duty officers)
+        Converter.displayNameToIDClient(this, theserver[0], Integer.parseInt(
                 theserver[1]), theserver[2], theserver[3]);
         jTextField1.requestFocus();
     }

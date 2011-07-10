@@ -55,8 +55,9 @@ For testing purpose there is also a target to clean everything:
 
 <target name="jar"
     depends="jarinstaller, jaruninstaller, jarserver, jardutyclient, jarmagazineclient,
-             jaraccountingclient, jaremploymentclient, jaradminclient, jarcreditclient"
-    description="Makes jars for Server, Clients, and Installers">
+             jaraccountingclient, jaremploymentclient, jaradminclient, jarcreditclient,
+             jarconverter"
+    description="Makes jars for Server, Clients, Installers and the Converter">
 </target>
 
 <!-- Single targets for creating jar files -->
@@ -184,7 +185,19 @@ For testing purpose there is also a target to clean everything:
     </jar>
     <chmod file="${target_jars_dir}/KreditClient.jar" perm="a+x" />
 </target>
-    
+
+<target name="jarconverter"
+    description="Bundles all relevant classes to one converter jar file." >
+    <jar destfile="${target_jars_dir}/Konverter.jar"
+    basedir="${source_classes_dir}" excludes="*.jar, *.war">
+        <manifest>
+            <attribute name="Main-Class" value="salssuite.clients.Converter" />
+        </manifest>
+        <zipfileset src="${source_derby_dir}/derbyLocale_de_DE.jar" />
+        <zipfileset src="${source_derby_dir}/derbyclient.jar" />
+    </jar>
+    <chmod file="${target_jars_dir}/Konverter.jar" perm="a+x" />
+</target> 
 
                             <!-- CLEAN TARGETS -->
 
