@@ -1283,6 +1283,7 @@ public class EmploymentClient extends javax.swing.JFrame {
                     totalFreeJobsDisplay.setText(""+
                             (Integer.parseInt(totalFreeJobsDisplay.getText())-1));
                     unemployedListModel.removeElement(data);
+                    updateCompanyEmployedListModel();
 
                     //subtract one free job in the company's table row
                     companyTableModel.setValueAt(""+(Integer.parseInt((String)
