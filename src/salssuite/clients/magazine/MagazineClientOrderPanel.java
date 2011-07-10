@@ -412,6 +412,8 @@ public class MagazineClientOrderPanel extends javax.swing.JPanel {
         int index;
         try {
             index = wareList.getSelectedIndex();
+            if(index < 0)
+                return;
         } catch(ArrayIndexOutOfBoundsException e) {return;}
 
         String wareDescr = (String)wareListModel.get(index);

@@ -775,6 +775,7 @@ public class EmploymentClient extends javax.swing.JFrame {
                         if(monitor.isCanceled())
                             break;
                         rowsProcessed ++;
+                        publish(rowsProcessed);
 
                         if(showOnlyWithFreeJobs &&
                                 getFreeJobsCount(companyData.getInt("ID")) <= 0)
@@ -791,8 +792,6 @@ public class EmploymentClient extends javax.swing.JFrame {
 
                         //update the total number of free jobs
                         totalFreeJobsCount += freeJobs;
-
-                        publish(rowsProcessed);
                     }
                     
                     totalFreeJobsDisplay.setText(""+totalFreeJobsCount);

@@ -82,7 +82,7 @@ public class CitizenModulePanel extends javax.swing.JPanel {
                     originalSurname = (String)tableModel.getValueAt(row,2);
                     originalForm = (String)tableModel.getValueAt(row,3);
                 }
-                catch(ArrayIndexOutOfBoundsException e) {}
+                catch(IndexOutOfBoundsException e) {}
                 //This exception occurs when all rows are removed from the
                 //table model, in which case we don't need the originalXXX stuff
                 //anyway.
@@ -320,7 +320,6 @@ public class CitizenModulePanel extends javax.swing.JPanel {
 
                 //if both is not the case, update the database
                 stmt.executeUpdate("DELETE FROM citizens WHERE id = "+ID);
-                tableModel.removeRow(row);
             }
 
             //update the visual representation
