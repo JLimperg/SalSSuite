@@ -346,8 +346,8 @@ public class Util {
     public static String getDateString(GregorianCalendar date) {
         return ""+
                 date.get(GregorianCalendar.YEAR)+"-"+
-                (date.get(GregorianCalendar.MONTH)+1)+"-"+
-                date.get(GregorianCalendar.DAY_OF_MONTH);
+                addZeroes(date.get(GregorianCalendar.MONTH)+1, 2)+"-"+
+                addZeroes(date.get(GregorianCalendar.DAY_OF_MONTH), 2);
     }
 
     /**
@@ -378,9 +378,9 @@ public class Util {
      */
     public static String getTimeString(GregorianCalendar time) {
         return ""+
-                time.get(GregorianCalendar.HOUR_OF_DAY)+":"+
-                time.get(GregorianCalendar.MINUTE)+":"+
-                time.get(GregorianCalendar.SECOND);
+                addZeroes(time.get(GregorianCalendar.HOUR_OF_DAY), 2)+":"+
+                addZeroes(time.get(GregorianCalendar.MINUTE), 2)+":"+
+                addZeroes(time.get(GregorianCalendar.SECOND), 2);
     }
 
     /**
