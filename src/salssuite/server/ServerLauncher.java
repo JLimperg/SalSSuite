@@ -1,3 +1,21 @@
+/*
+ *  SalSSuite - Suite of programmes for managing a SalS project
+ *  Copyright (C) 2011  Jannis Limperg <jannis[dot]limperg[at]arcor[dot]de>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package salssuite.server;
 
 import java.awt.event.ActionListener;
@@ -14,6 +32,7 @@ import salssuite.util.gui.ExceptionDisplayDialog;
  * <p>
  * This class is the SalSSuite Server's Main Class.
  * @author Jannis Limperg
+ * @version 1.0
  */
 public class ServerLauncher {
 
@@ -141,8 +160,7 @@ public class ServerLauncher {
         server.writeToLog("LAUNCHER: Server up and running");
         server.writeToErrorLog("LAUNCHER: Server up and running");
 
-        //DEBUG Reenable backup facility when development is finished
-        //backup.start();
+        backup.start();
         }
         catch (Exception e) {
             if(!noGUI)

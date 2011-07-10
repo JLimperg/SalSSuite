@@ -4,6 +4,24 @@
  * Created on 12.12.2010, 22:19:41
  */
 
+/*
+ *  SalSSuite - Suite of programmes for managing a SalS project
+ *  Copyright (C) 2011  Jannis Limperg <jannis[dot]limperg[at]arcor[dot]de>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package salssuite.clients.accounting;
 
 import java.awt.Frame;
@@ -26,6 +44,7 @@ import salssuite.util.Util;
  * references to it. Instead, all entries remain exactly the same but no
  * entries with this category can further be created using the client GUI.
  * @author Jannis Limperg
+ * @version 1.0
  * @see salssuite.clients.accounting.AccountingClient
  * @see salssuite.server.module.AccountingModule
  */

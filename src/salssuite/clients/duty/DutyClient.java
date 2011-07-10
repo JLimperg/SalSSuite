@@ -4,6 +4,24 @@
  * Created on 14.02.2010, 18:25:19
  */
 
+/*
+ *  SalSSuite - Suite of programmes for managing a SalS project
+ *  Copyright (C) 2011  Jannis Limperg <jannis[dot]limperg[at]arcor[dot]de>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package salssuite.clients.duty;
 
 import java.awt.Color;
@@ -27,6 +45,7 @@ import salssuite.util.gui.HelpBrowser;
  * The client for logging in and out citizens. It is meant to be used by the
  * state's 'duty officers'.
  * @author Jannis Limperg
+ * @version 1.0
  * @see salssuite.server.module.DutyModule
  */
 public class DutyClient extends javax.swing.JFrame {

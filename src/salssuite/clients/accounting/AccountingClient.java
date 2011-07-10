@@ -1,3 +1,27 @@
+/*
+ * AccountingClient.java
+ *
+ * Created on 11.12.2010, 02:19:03
+ */
+
+/*
+ *  SalSSuite - Suite of programmes for managing a SalS project
+ *  Copyright (C) 2011  Jannis Limperg <jannis[dot]limperg[at]arcor[dot]de>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package salssuite.clients.accounting;
 
 
@@ -32,12 +56,6 @@ import salssuite.util.TableModelUpdater;
 import salssuite.util.gui.FilterPanel;
 import salssuite.util.gui.HelpBrowser;
 
-/*
- * AccountingClient.java
- *
- * Created on 11.12.2010, 02:19:03
- */
-
 /**
  * Client for the accounting module. Using this client, the user can manage
  * all incomes and expenditures in real currency before or during
@@ -46,6 +64,7 @@ import salssuite.util.gui.HelpBrowser;
  * The client can produce some output in human-readable csv format that is
  * well suited for printing.
  * @author Jannis Limperg
+ * @version 1.0
  * @see salssuite.server.module.AccountingModule
  */
 public class AccountingClient extends javax.swing.JFrame {
