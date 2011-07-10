@@ -168,6 +168,7 @@ public class AccountingClient extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         currentSaldoDisplay = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SalSSuite - Buchhaltung");
@@ -227,6 +228,7 @@ public class AccountingClient extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        table.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 editEntry(evt);
@@ -244,6 +246,13 @@ public class AccountingClient extends javax.swing.JFrame {
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 help(evt);
+            }
+        });
+
+        jButton2.setText("Eintrag löschen");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteEntry(evt);
             }
         });
 
@@ -266,7 +275,9 @@ public class AccountingClient extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(newEntryButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 770, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jButton2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 632, Short.MAX_VALUE)
                                 .addComponent(manageCategoriesButton))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 968, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
@@ -287,7 +298,8 @@ public class AccountingClient extends javax.swing.JFrame {
                 .addGap(38, 38, 38)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(newEntryButton)
-                    .addComponent(manageCategoriesButton))
+                    .addComponent(manageCategoriesButton)
+                    .addComponent(jButton2))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(exportButton)
@@ -578,6 +590,44 @@ public class AccountingClient extends javax.swing.JFrame {
         new HelpBrowser("AccountingClient").setVisible(true);
     }//GEN-LAST:event_help
 
+    private void deleteEntry(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteEntry
+        //get selected entry
+        int row = table.convertRowIndexToModel(table.getSelectedRow());
+        if(row < 0)
+            return;
+
+        int ID = (Integer)tableModel.getValueAt(row, 0);
+
+        //confirm the deletion
+        int option = JOptionPane.showConfirmDialog(this, "<html>Eintrag wirklich"
+                + " löschen?<br/>Diese Aktion kann nicht rückgängig gemacht"
+                + " werden.</html>", "Löschen bestätigen",
+                JOptionPane.WARNING_MESSAGE);
+        if(option != JOptionPane.YES_OPTION)
+            return;
+
+        /*
+         * TODO It should be checked if the chosen entry has been modified
+         * by another user in the meantime.
+         */
+
+        try {
+            //delete the entry from the database
+            stmt.executeUpdate("DELETE FROM accounting WHERE id = "+ID);
+
+            //update the model
+            tableModel.removeRow(row);
+        }
+        catch(SQLException e) {
+            JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
+                    + " Datenbank", "Netzwerkfehler", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return;
+        }
+
+        updateCurrentSaldoDisplay();
+    }//GEN-LAST:event_deleteEntry
+
     /**
      * Displays an <code>AccountingClient</code>.
      * @param args Command line arguments are not supported.
@@ -599,6 +649,7 @@ public class AccountingClient extends javax.swing.JFrame {
     private javax.swing.JButton exportButton;
     private javax.swing.JPanel filterPanelPlaceholder;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
