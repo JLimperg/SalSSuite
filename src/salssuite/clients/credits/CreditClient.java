@@ -177,6 +177,7 @@ public class CreditClient extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        interestButtonGroup = new javax.swing.ButtonGroup();
         onlyOpenFilter = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
@@ -187,6 +188,9 @@ public class CreditClient extends javax.swing.JFrame {
         onlyDueFilter = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
+        interestModelPerDay = new javax.swing.JRadioButton();
+        interestModelWholeCredit = new javax.swing.JRadioButton();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SalSSuite - Kredite");
@@ -205,7 +209,7 @@ public class CreditClient extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "Kreditnehmer", "Gesamtbetrag", "zurückgezahlt", "Startbetrag", "Zinssatz/Tag", "ausgezahlt am", "fällig am"
+                "ID", "Kreditnehmer", "Gesamtbetrag", "zurückgezahlt", "Startbetrag", "Zinssatz", "ausgezahlt am", "fällig am"
             }
         ) {
             Class[] types = new Class [] {
@@ -283,6 +287,28 @@ public class CreditClient extends javax.swing.JFrame {
             }
         });
 
+        interestButtonGroup.add(interestModelPerDay);
+        interestModelPerDay.setText("pro Tag");
+        interestModelPerDay.setToolTipText("Der Client berechnet Zinsen in Höhe des angegebenen Zinssatzes für jeden Tag, den der Kredit nicht zurückgezahlt wird.");
+        interestModelPerDay.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                interestModelChanged(evt);
+            }
+        });
+
+        interestButtonGroup.add(interestModelWholeCredit);
+        interestModelWholeCredit.setSelected(true);
+        interestModelWholeCredit.setText("für den gesamten Kredit");
+        interestModelWholeCredit.setToolTipText("Der Client berechnet Zinsen in Höhe des angegebenen Zinssatzes nur einmal für den gesamten Kreditzeitraum.");
+        interestModelWholeCredit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                interestModelChanged(evt);
+            }
+        });
+
+        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() | java.awt.Font.BOLD));
+        jLabel2.setText("Zinssatz gilt");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -296,7 +322,13 @@ public class CreditClient extends javax.swing.JFrame {
                         .addComponent(onlyOpenFilter)
                         .addGap(18, 18, 18)
                         .addComponent(onlyDueFilter)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 591, Short.MAX_VALUE)
+                        .addGap(45, 45, 45)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(interestModelPerDay)
+                        .addGap(18, 18, 18)
+                        .addComponent(interestModelWholeCredit)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
                         .addComponent(jButton3))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jButton1)
@@ -314,7 +346,10 @@ public class CreditClient extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(onlyOpenFilter)
                     .addComponent(onlyDueFilter)
-                    .addComponent(jButton3))
+                    .addComponent(jButton3)
+                    .addComponent(interestModelWholeCredit)
+                    .addComponent(interestModelPerDay)
+                    .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -342,14 +377,14 @@ public class CreditClient extends javax.swing.JFrame {
 
         //add visual representation
         int newCreditID = dia.getCreditID();
-        if(newCreditID < -1)
+        if(newCreditID <= -1)
             return;
 
         try {
             ResultSet credit = stmt.executeQuery("SELECT * FROM credits WHERE"
                     + " id = "+newCreditID);
             credit.next();
-            constructTableRow(credit);
+            tableModel.addRow(constructTableRow(credit));
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
@@ -431,6 +466,15 @@ public class CreditClient extends javax.swing.JFrame {
         new HelpBrowser("CreditClient").setVisible(true);
     }//GEN-LAST:event_help
 
+    private void interestModelChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interestModelChanged
+        if(interestModelPerDay.isSelected())
+            table.getColumnModel().getColumn(5).setHeaderValue("Zinssatz/Tag");
+        else
+            table.getColumnModel().getColumn(5).setHeaderValue("Zinssatz");
+
+        filterPanel.clearFilters();
+    }//GEN-LAST:event_interestModelChanged
+
     /**
      * Creates a new <code>CreditClient</code> and displays it.
      * @param args Command line arguments not supported.
@@ -450,10 +494,14 @@ public class CreditClient extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel filterPanelPlaceholder;
+    private javax.swing.ButtonGroup interestButtonGroup;
+    private javax.swing.JRadioButton interestModelPerDay;
+    private javax.swing.JRadioButton interestModelWholeCredit;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JCheckBox onlyDueFilter;
     private javax.swing.JCheckBox onlyOpenFilter;
@@ -621,24 +669,29 @@ public class CreditClient extends javax.swing.JFrame {
         if(onlyDueFilter.isSelected() && !endDayCal.before(today))
             return -1;
 
-        if(today.before(startDayCal))
-            amount = originalAmount;
-        else if(today.after(endDayCal)) {
-            int daysBetweenEndAndStart = 1;
-            while(endDayCal.after(startDayCal)) {
-                daysBetweenEndAndStart += 1;
-                startDayCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
+        //if we have an interest per day model
+        if(interestModelPerDay.isSelected()) {
+            if(today.before(startDayCal))
+                amount = originalAmount;
+            else if(today.after(endDayCal)) {
+                int daysBetweenEndAndStart = 1;
+                while(endDayCal.after(startDayCal)) {
+                    daysBetweenEndAndStart += 1;
+                    startDayCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
+                }
+                amount = originalAmount*Math.pow(1+interest/100, daysBetweenEndAndStart);
             }
-            amount = originalAmount*Math.pow(1+interest/100, daysBetweenEndAndStart);
-        }
-        else { //current day is between startDay and endDay
-            int daysBetweenTodayAndStart = 0;
-            while(today.after(startDayCal)) {
-                daysBetweenTodayAndStart += 1;
-                startDayCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
+            else { //current day is between startDay and endDay
+                int daysBetweenTodayAndStart = 0;
+                while(today.after(startDayCal)) {
+                    daysBetweenTodayAndStart += 1;
+                    startDayCal.add(GregorianCalendar.DAY_OF_MONTH, 1);
+                }
+                amount = originalAmount*Math.pow(1+interest/100, daysBetweenTodayAndStart);
             }
-            amount = originalAmount*Math.pow(1+interest/100, daysBetweenTodayAndStart);
         }
+        else
+            amount = originalAmount * (1 + interest/100);
 
         return amount;
     }
