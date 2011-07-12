@@ -46,6 +46,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import salssuite.clients.ConnectDialog;
+import salssuite.clients.Converter;
 import salssuite.server.module.EmploymentModule;
 import salssuite.util.Constants;
 import salssuite.util.Util;
@@ -143,6 +144,10 @@ public class EmploymentClient extends javax.swing.JFrame {
         //provide initial data
         updateUnemployedListModel();
         updateCompanyTableModel();
+
+        //display Converter
+        Converter.displayNameToIDClient(this, theserver[0], Integer.parseInt(
+                theserver[1]), theserver[2], theserver[3]);
     }
 
     /** This method is called from within the constructor to

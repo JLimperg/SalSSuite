@@ -36,6 +36,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import salssuite.clients.ConnectDialog;
+import salssuite.clients.Converter;
 import salssuite.server.module.gui.CitizenModulePanel;
 import salssuite.server.module.gui.CompanyModulePanel;
 import salssuite.server.module.gui.DutyModulePanel;
@@ -125,6 +126,10 @@ public class AdminClient extends javax.swing.JFrame {
 
         //add all the panels
         buildGUI();
+
+        //display Converter
+        Converter.displayNameToIDClient(this, theserver[0], Integer.parseInt(
+                theserver[1]), theserver[2], theserver[3]);
     }
 
     /** This method is called from within the constructor to

@@ -31,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import salssuite.util.Constants;
 import salssuite.clients.ConnectDialog;
+import salssuite.clients.Converter;
 import salssuite.server.module.MagazineModule;
 import salssuite.util.gui.HelpBrowser;
 
@@ -87,8 +88,9 @@ public class MagazineClient extends javax.swing.JFrame {
         String serverAddress = null;
 
         //connect to server
+        String[] server;
         do {
-            String[] server = ConnectDialog.showConnectDialog(this,
+           server = ConnectDialog.showConnectDialog(this,
                     MagazineModule.NAME);
             serverAddress = server[0];
             port = Integer.parseInt(server[1]);
@@ -150,6 +152,10 @@ public class MagazineClient extends javax.swing.JFrame {
         setLocation(node.getInt("window.x", 300), node.getInt("window.y", 200));
         setSize(node.getInt("window.width", (int)getPreferredSize().getWidth()),
                 node.getInt("window.height", (int)getPreferredSize().getHeight()));
+
+        //display Converter
+        Converter.displayNameToIDClient(this, server[0], Integer.parseInt(
+                server[1]), server[2], server[3]);
     }
 
     /** This method is called from within the constructor to

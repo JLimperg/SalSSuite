@@ -47,6 +47,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import salssuite.clients.ConnectDialog;
+import salssuite.clients.Converter;
 import salssuite.server.module.CreditModule;
 import salssuite.util.Constants;
 import salssuite.util.TableModelUpdater;
@@ -185,6 +186,10 @@ public class CreditClient extends javax.swing.JFrame {
         filterPanelPlaceholder.add(filterPanel, java.awt.BorderLayout.CENTER);
 
         filterPanel.clearFilters();
+
+        //display Converter
+        Converter.displayNameToIDClient(this, theserver[0], Integer.parseInt(
+                theserver[1]), theserver[2], theserver[3]);
     }
 
     /** This method is called from within the constructor to

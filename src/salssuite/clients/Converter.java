@@ -235,7 +235,8 @@ public class Converter extends JFrame {
     private void connectToServer(String addr, int port, String userName, String password){
 
         if(addr == null) {
-            String[] serverData = ConnectDialog.showConnectDialog(this, "duty");
+            String[] serverData = ConnectDialog.showConnectDialog(this,
+                    salssuite.server.module.AdminModule.NAME);
             connectToServer(serverData[0], Integer.parseInt(serverData[1]),
                     serverData[2], serverData[3]);
             return;

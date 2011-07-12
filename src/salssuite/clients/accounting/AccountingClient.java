@@ -82,9 +82,10 @@ public class AccountingClient extends javax.swing.JFrame {
         String serverAddress = null;
 
         //connect to server
+        String[] server;
         do {
 
-            String[] server = ConnectDialog.showConnectDialog(this,
+            server = ConnectDialog.showConnectDialog(this,
                     AccountingModule.NAME);
             serverAddress = server[0];
             port = Integer.parseInt(server[1]);
