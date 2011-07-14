@@ -297,7 +297,8 @@ public class DutyClient extends javax.swing.JFrame {
 
             //determine whether citi is currently logged in or out
             ResultSet logs = stmt.executeQuery("SELECT type FROM logs WHERE" +
-                    " citizenId = "+ID);
+                    " citizenId = "+ID + " AND date = '"+Util.getDateString()+"'"
+                    + " ORDER BY time");
             
             logs.last();
             
@@ -308,7 +309,8 @@ public class DutyClient extends javax.swing.JFrame {
                         "'"+Util.getTimeString()+"', "+
                         "1"+
                         ")");
-                display("Bürger "+ID+" eingeloggt.");
+                display.setForeground(Color.GREEN);
+                display.setText("Bürger "+ID+" eingeloggt.");
             }
             else {
                 stmt.executeUpdate("INSERT INTO logs VALUES (" +
@@ -317,7 +319,8 @@ public class DutyClient extends javax.swing.JFrame {
                         "'"+Util.getTimeString()+"', "+
                         "0"+
                         ")");
-                display("Bürger "+ID+" ausgeloggt.");
+                display.setForeground(Color.BLUE);
+                display.setText("Bürger "+ID+" ausgeloggt.");
             }
         }
         catch(SQLException e) {
@@ -337,13 +340,4 @@ public class DutyClient extends javax.swing.JFrame {
         display.setForeground(Color.RED);
         display.setText(message);
     }//end displayError()
-
-    /**
-     * Displays a normal message to the user.
-     * @param message The message to be displayed.
-     */
-    private void display(String message) {
-        display.setForeground(Color.GREEN);
-        display.setText(message);
-    }//end display()
 }
