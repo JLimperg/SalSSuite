@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.TreeMap;
 import javax.swing.JLabel;
@@ -448,11 +449,14 @@ public class FilterPanel extends javax.swing.JPanel{
                     return;
                 }
 
+                GregorianCalendar date = new GregorianCalendar(
+                        Util.expandYear(input3), input2-1,
+                        Integer.parseInt(input1));
+
                 queryString += fieldName + " ";
                 queryString += operatorSwitcherButtons.get(fieldName)
                         .getStringOperator() + " ";
-                queryString += ("'"+Util.expandYear(input3)+"-"+input2+"-"+
-                        Integer.parseInt(input1)+"'");
+                queryString += "'"+Util.getDateString(date)+"'";
             }
         }//end for all fields
 
