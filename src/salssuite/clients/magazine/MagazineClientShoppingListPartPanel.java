@@ -73,6 +73,7 @@ public class MagazineClientShoppingListPartPanel extends javax.swing.JPanel {
 
         this.parent = parent;
         this.wareID = wareID;
+        dbcon = databaseConnection;
 
         try {
             stmt = databaseConnection.createStatement();
@@ -228,6 +229,7 @@ public class MagazineClientShoppingListPartPanel extends javax.swing.JPanel {
 
     Container parent;
     Statement stmt;
+    Connection dbcon;
     LinkedList<ActionListener> listeners = new LinkedList<ActionListener>();
 
     //============================CONSTRUCTORS================================//
@@ -292,21 +294,23 @@ public class MagazineClientShoppingListPartPanel extends javax.swing.JPanel {
     public int getRequiredAmount() {
         
         try {
-            //determine available amount
-            ResultSet ware = stmt.executeQuery("SELECT (available) FROM " +
-                    "goods WHERE id = "+wareID);
-            ware.next();
-            int availableAmount = ware.getInt("available");
+            int orderedAmount = 0;
 
-            //determine absolute required amount
-            int requiredAmount = 0;
-            ResultSet orders = stmt.executeQuery("SELECT (pieces) FROM " +
+            Statement stmt2 = dbcon.createStatement();
+            Statement stmt3 = dbcon.createStatement();
+
+            ResultSet orders = stmt2.executeQuery("SELECT pieces, orderId FROM " +
                     "orderParts WHERE wareId = "+wareID);
-            while(orders.next())
-                requiredAmount += orders.getInt("pieces");
 
-            //return relative required amount
-            return requiredAmount - availableAmount;
+            while(orders.next()) {
+                ResultSet order = stmt3.executeQuery("SELECT processed FROM orders WHERE " +
+                        "id = "+orders.getInt("orderId"));
+                order.next();
+                if(order.getInt("processed") == 0)
+                    orderedAmount += orders.getInt("pieces");
+        }
+
+            return orderedAmount;
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(parent, "Fehler bei der Kommunikation" +
