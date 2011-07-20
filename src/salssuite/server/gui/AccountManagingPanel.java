@@ -526,7 +526,7 @@ public class AccountManagingPanel extends javax.swing.JPanel {
         //generate the new one
         try {
             ResultSet usernames = stmt.executeQuery("SELECT DISTINCT username"
-                    + " FROM permissions ORDER BY username");
+                    + " FROM accounts ORDER BY username");
 
             LinkedList<String> users = new LinkedList<String>();
             while(usernames.next())
