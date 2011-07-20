@@ -888,9 +888,12 @@ public class EmploymentClient extends javax.swing.JFrame {
             Statement stmt2 = dbcon.createStatement();
             ResultSet founder = stmt2.executeQuery("SELECT forename, surname, id"
                     + " FROM citizens WHERE companyID = "+ID+" AND isBoss = 1");
-            founder.next();
-            companyFounderDisplay.setText(founder.getInt("id") + " " +
-                    founder.getString("forename")+ " " + founder.getString("surname"));
+            if(founder.next())
+                companyFounderDisplay.setText(founder.getInt("id") + " " +
+                        founder.getString("forename")+ " " +
+                        founder.getString("surname"));
+            else
+                companyFounderDisplay.setText("UNBEKANNT");
         }
         catch(SQLException e) {
             JOptionPane.showMessageDialog(this, "Fehler bei der Kommunikation mit der"
