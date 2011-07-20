@@ -42,7 +42,7 @@ import salssuite.util.Util;
  * This dialog also alerts the user when they attempt to edit a ware that
  * has been edited by another user since the former brought up this client.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.module.MagazineModule#buildDatabase
  * @see salssuite.server.module.MagazineModule
  * @see MagazineClient

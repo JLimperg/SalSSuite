@@ -33,7 +33,7 @@ import javax.swing.Timer;
  * exception and the full stack trace, as well as a customisable message. It
  * supports a timeout after which the dialog will automatically be disposed.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class ExceptionDisplayDialog extends javax.swing.JDialog {
 

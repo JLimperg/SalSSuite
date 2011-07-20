@@ -52,7 +52,7 @@ import salssuite.util.gui.FilterPanel;
  * For the properties of each ware, see
  * {@link salssuite.server.module.MagazineModule#buildDatabase}.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see MagazineClient
  * @see salssuite.server.module.MagazineModule
  */

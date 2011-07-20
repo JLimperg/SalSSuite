@@ -68,7 +68,7 @@ import salssuite.util.gui.HelpBrowser;
  * For detailed documentation on those steps, see the individual panels
  * responsible for certain aspects of the client.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see MagazineClientOrderPanel
  * @see MagazineClientShoppingListPanel
  * @see MagazineClientWarePanel

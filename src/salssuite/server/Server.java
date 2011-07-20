@@ -198,7 +198,7 @@ import salssuite.server.module.CreditModule;
  * interface instead of the usual GUI, just run the {@link ServerLauncher} with
  * parameter <code>--no-gui</code>.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class Server {
 

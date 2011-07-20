@@ -41,7 +41,7 @@ import salssuite.util.Constants;
  * The client itself remembers which project was opened last time using a
  * {@link java.util.prefs.Preferences} node.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class PreProjectDialog extends javax.swing.JDialog {
 

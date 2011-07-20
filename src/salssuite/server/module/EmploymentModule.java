@@ -26,7 +26,7 @@ import javax.swing.JPanel;
  * otherwise it is completely irrelevant. The client only uses data from the
  * main server database.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class EmploymentModule implements Module {
 

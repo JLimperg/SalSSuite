@@ -44,7 +44,7 @@ import salssuite.util.Util;
  * references to it. Instead, all entries remain exactly the same but no
  * entries with this category can further be created using the client GUI.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.clients.accounting.AccountingClient
  * @see salssuite.server.module.AccountingModule
  */

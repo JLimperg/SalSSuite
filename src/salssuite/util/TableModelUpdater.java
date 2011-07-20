@@ -32,7 +32,7 @@ import javax.swing.table.DefaultTableModel;
  * way. How exactly each table row should be created is determined by the
  * implementation of {@link #buildTableRow}.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public abstract class TableModelUpdater {
 

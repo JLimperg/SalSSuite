@@ -45,7 +45,7 @@ import salssuite.util.gui.HelpBrowser;
  * The client for logging in and out citizens. It is meant to be used by the
  * state's 'duty officers'.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.module.DutyModule
  */
 public class DutyClient extends javax.swing.JFrame {

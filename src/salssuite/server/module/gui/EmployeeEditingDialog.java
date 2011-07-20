@@ -35,7 +35,7 @@ import javax.swing.JOptionPane;
  * Lets the user choose an employee and their salary. It is meant to be used by
  * the {@link CompanyEditingDialog} to add/remove employees to/from a company.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class EmployeeEditingDialog extends javax.swing.JDialog {
 

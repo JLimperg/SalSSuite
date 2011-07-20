@@ -29,7 +29,7 @@ import salssuite.server.module.gui.CompanyModulePanel;
  * Instead it only provides a panel for the {@link salssuite.server.gui.ServerGUI}
  * which the companies can be managed with.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.module.gui.CompanyModulePanel
  */
 public class CompanyModule implements Module{

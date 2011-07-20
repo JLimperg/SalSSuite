@@ -70,7 +70,7 @@ import salssuite.util.Util;
  * <p>
  * For a full query string syntax see {@link #FilterPanel the constructor}.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class FilterPanel extends javax.swing.JPanel{
 

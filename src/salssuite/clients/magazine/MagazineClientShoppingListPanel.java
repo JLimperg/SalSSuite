@@ -63,7 +63,7 @@ import salssuite.util.Util;
  * a balance for all shoppings made by the magazine staff. Again, this balance
  * is created in human-readable text format.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.module.MagazineModule
  * @see MagazineClientShoppingListPartPanel
  */

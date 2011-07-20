@@ -49,7 +49,7 @@ import salssuite.server.module.gui.DutyModulePanel;
  * contain date and time, the affected citizen's ID and the type of event
  * (login or logout). See {@link #buildDatabase}.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class DutyModule implements Module {
 

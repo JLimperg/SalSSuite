@@ -40,7 +40,7 @@ import salssuite.server.Server;
  * Entries can be organised using user-defined categories. Each entry must be
  * assigned a category.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.clients.accounting.AccountingClient
  */
 public class AccountingModule implements Module {

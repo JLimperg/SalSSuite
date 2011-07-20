@@ -40,7 +40,7 @@ import salssuite.util.gui.ExceptionDisplayDialog;
  * the 'companies' table in the general database.
  * See {@link salssuite.server.Server#buildServerDatabase} for the table structure.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class CompanyEditingDialog extends javax.swing.JDialog {
 

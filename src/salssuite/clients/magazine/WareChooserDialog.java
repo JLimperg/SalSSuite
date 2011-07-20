@@ -37,7 +37,7 @@ import javax.swing.event.DocumentListener;
  * times this ware is required. Helper dialog for
  * {@link MagazineClientOrderPanel}s.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class WareChooserDialog extends javax.swing.JDialog {
 

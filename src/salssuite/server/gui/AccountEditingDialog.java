@@ -42,7 +42,7 @@ import javax.swing.JPanel;
  * Using this dialog, the user is presented a list of all modules and can determine
  * which modules the user whose permissions are to be edited may access.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.Server
  * @see AccountManagingGUI
  */

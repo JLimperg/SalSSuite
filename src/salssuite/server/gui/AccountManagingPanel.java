@@ -56,7 +56,7 @@ import salssuite.util.Util;
  * 'permissions'. See {@link salssuite.server.Server#buildServerDatabase}
  * for details.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class AccountManagingPanel extends javax.swing.JPanel {
 

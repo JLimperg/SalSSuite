@@ -22,7 +22,7 @@ package salssuite.util;
  * Represents an employee of a certain company. This class extends the standard
  * <code>Citizen</code> by adding a field for the salary.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class Employee extends Citizen {
 

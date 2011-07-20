@@ -53,7 +53,7 @@ import salssuite.util.Passwords;
  * {@link salssuite.util.Constants#installerNode} so that the {@link Uninstaller} can use
  * this node to determine the directory.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.Server
  */
 public class Installer extends javax.swing.JFrame {

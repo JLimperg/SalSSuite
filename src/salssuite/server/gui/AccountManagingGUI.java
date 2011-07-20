@@ -37,7 +37,7 @@ import salssuite.server.module.Module;
  * is intended to behave more like a dialog, therefore it comes without a
  * <code>main()</code> method.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.util.gui.Installer
  */
 public class AccountManagingGUI extends javax.swing.JFrame {

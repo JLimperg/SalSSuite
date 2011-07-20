@@ -53,7 +53,7 @@ import salssuite.util.Util;
  * This programme is not part of the standard server-client-programmes but
  * rather a utility tool.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.module.AccountingModule#buildDatabase
  * @see #main
  */

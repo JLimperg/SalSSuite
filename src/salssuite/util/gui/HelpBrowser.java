@@ -52,7 +52,7 @@ import javax.swing.event.HyperlinkEvent;
  * them in the jar files (using the ant script) and access them as local
  * resources via <code>getClass().getResource()</code>.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class HelpBrowser extends javax.swing.JFrame {
 

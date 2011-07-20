@@ -64,7 +64,7 @@ import salssuite.util.gui.HelpBrowser;
  * The client can produce some output in human-readable csv format that is
  * well suited for printing.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.module.AccountingModule
  */
 public class AccountingClient extends javax.swing.JFrame {

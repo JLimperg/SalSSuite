@@ -42,7 +42,7 @@ import salssuite.server.Project;
  * this class are meant to be <b>read only</b> and not modified by anything except
  * this class itself.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class Constants {
 

@@ -68,7 +68,7 @@ import salssuite.util.Util;
  * <b>start day & end day</b> - The days on which the project starts and ends
  * respectively.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class Project {
 

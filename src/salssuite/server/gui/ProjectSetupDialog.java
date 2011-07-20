@@ -42,7 +42,7 @@ import salssuite.util.Util;
  * Using this dialog, the user can edit all fields of an existing
  * <code>Project</code> or create a new one.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class ProjectSetupDialog extends javax.swing.JDialog {
 

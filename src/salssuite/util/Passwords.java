@@ -29,7 +29,7 @@ import java.util.Scanner;
  * Provides utility methods for dealing with passwords. This means especially 
  * encryption and managing password files.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class Passwords {
 

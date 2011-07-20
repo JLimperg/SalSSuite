@@ -28,7 +28,7 @@ import salssuite.server.module.gui.CitizenModulePanel;
  * database tables as the server already does this. Instead, it provides a
  * panel for the {@link salssuite.server.gui.ServerGUI} to manage citizens.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.module.gui.CitizenModulePanel
  */
 public class CitizenModule implements Module{

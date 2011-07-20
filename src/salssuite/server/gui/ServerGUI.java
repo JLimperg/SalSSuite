@@ -53,7 +53,7 @@ import salssuite.server.module.Module;
  * currently opened with new panels returned by the <code>getPanel()</code>
  * methods of loaded modules.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see ServerPanel
  */
 public class ServerGUI extends javax.swing.JFrame {

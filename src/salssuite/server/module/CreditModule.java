@@ -31,7 +31,7 @@ import salssuite.server.Server;
  * This module is responsible for setting up a database table that stores all
  * the credits. See {@link #buildDatabase}.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class CreditModule implements Module {
 

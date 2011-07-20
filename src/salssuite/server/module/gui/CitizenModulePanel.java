@@ -56,7 +56,7 @@ import salssuite.util.gui.FilterPanel;
  * table. The user can edit all values except for IDs and company
  * IDs, moreover they can add and remove citizens.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.Server#buildServerDatabase
  */
 public class CitizenModulePanel extends javax.swing.JPanel {

@@ -59,7 +59,7 @@ import salssuite.util.gui.HelpBrowser;
  * Client used to access and manipulate the credit data. See the corresponding
  * module's documentation for details on the credit mechanism.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.module.CreditModule
  */
 public class CreditClient extends javax.swing.JFrame {

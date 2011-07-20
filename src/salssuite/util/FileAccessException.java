@@ -26,7 +26,7 @@ import java.io.File;
  * to define the file which we tried to access when the error occured. That file's
  * absolute path is added to the exception message.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class FileAccessException extends Exception {
 

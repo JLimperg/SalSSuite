@@ -44,7 +44,7 @@ import salssuite.util.Constants;
  * The uninstaller removes the <code>Preferences</code> node
  * {@link salssuite.util.Constants#programmeNode} and all of its children.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see Installer
  */
 public class Uninstaller extends javax.swing.JFrame {

@@ -32,7 +32,7 @@ import salssuite.util.gui.ExceptionDisplayDialog;
  * <p>
  * This class is the SalSSuite Server's Main Class.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class ServerLauncher {
 

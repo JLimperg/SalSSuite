@@ -26,7 +26,7 @@ package salssuite.server;
  * to identify a special kind of problem not only semantically, but also
  * syntactically.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class ProjectException extends Exception {
 

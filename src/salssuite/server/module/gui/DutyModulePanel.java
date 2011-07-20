@@ -59,7 +59,7 @@ import salssuite.util.Util;
  * For a general description of the module's purpose and mechanisms, see
  * {@link salssuite.server.module.DutyModule its documentation}.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class DutyModulePanel extends javax.swing.JPanel {
 

@@ -25,7 +25,7 @@ import javax.swing.JPanel;
  * provide an account permission category for the <code>AdminClient</code>, i.e.
  * for access to the server panels. Otherwise it is completely useless.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class AdminModule implements Module {
 

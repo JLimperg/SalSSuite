@@ -25,7 +25,7 @@ import javax.swing.JPanel;
  * methods modules must overwrite to be part of the server. Most modules will
  * probably not use all methods, in that case they can simply be left void.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.Server
  */
 public interface Module {

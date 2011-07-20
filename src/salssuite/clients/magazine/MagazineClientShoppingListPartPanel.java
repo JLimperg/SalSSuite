@@ -43,7 +43,7 @@ import salssuite.util.Util;
  * the user can manipulate the 'available' property of this ware indirectly
  * without using the {@link MagazineClientWarePanel}.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see MagazineClientShoppingListPanel
  * @see salssuite.server.module.MagazineModule
  */

@@ -59,7 +59,7 @@ import salssuite.util.gui.PasswordPanel;
  * line interface for the server is reduced to the very basis of what can be
  * called a basis.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class AdminClient extends javax.swing.JFrame {
 

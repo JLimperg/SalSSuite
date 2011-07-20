@@ -47,7 +47,7 @@ import salssuite.util.Util;
  * responsible for keeping the list of <code>MagazineClientOrderPanel</code>s
  * up to date and adding new orders.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.module.MagazineModule
  */
 public class MagazineClientOrdersPanel extends javax.swing.JPanel {

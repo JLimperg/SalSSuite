@@ -23,7 +23,7 @@ package salssuite.util;
  * a structure, as it mainly contains fields and the appropriate
  * getter/setter-methods.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class Citizen implements Comparable<Citizen>
 {

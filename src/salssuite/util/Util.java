@@ -36,7 +36,7 @@ import javax.swing.table.TableModel;
  * a standard interface which all database modifications should use. This way
  * compatibility between them is ensured.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class Util {
 

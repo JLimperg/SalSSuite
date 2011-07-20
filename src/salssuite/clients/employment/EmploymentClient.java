@@ -58,7 +58,7 @@ import salssuite.util.gui.HelpBrowser;
  * It uses only data from the main server database (specifically citizen and
  * company data).
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class EmploymentClient extends javax.swing.JFrame {
 

@@ -38,7 +38,7 @@ import salssuite.util.Util;
  * database operations on its own, therefore no interaction with other UI
  * components is necessary.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class AddCreditDialog extends javax.swing.JDialog {
 

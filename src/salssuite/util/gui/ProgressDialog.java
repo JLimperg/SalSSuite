@@ -34,7 +34,7 @@ import javax.swing.JProgressBar;
  * for displaying 'indeterminate progress'; for monitorable progress a
  * {@link javax.swing.ProgressMonitor} should be used.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class ProgressDialog extends javax.swing.JDialog {
 

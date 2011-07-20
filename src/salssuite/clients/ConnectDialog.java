@@ -62,7 +62,7 @@ import salssuite.util.Util;
  * <br/>
  * Then you can add any other {@link java.awt.event.WindowListener}s you like.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  */
 public class ConnectDialog extends javax.swing.JDialog {
 

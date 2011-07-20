@@ -50,7 +50,7 @@ import salssuite.util.Util;
  * panel also has a mechanism which removes it from the parent container automatically
  * when the order is deleted by the user.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see MagazineClient
  * @see salssuite.server.module.MagazineModule
  */

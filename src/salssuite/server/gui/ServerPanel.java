@@ -44,7 +44,7 @@ import java.util.LinkedList;
  * See {@link salssuite.server.Server} for details on the server's
  * abilities.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.Project
  */
 public class ServerPanel extends javax.swing.JPanel {

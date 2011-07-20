@@ -41,7 +41,7 @@ import salssuite.util.Util;
  * {@link salssuite.clients.accounting.AccountingClient}
  * can simply display it and wait for its disposal.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.module.AccountingModule
  */
 public class AccountingEntryDialog extends javax.swing.JDialog {

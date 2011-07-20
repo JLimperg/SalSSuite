@@ -46,7 +46,7 @@ import salssuite.util.Util;
  * <p>
  * The methods in {@link salssuite.util.Passwords} are used for encryption.
  * @author Jannis Limperg
- * @version 1.0
+ * @version 1.0.1
  * @see salssuite.server.gui.ServerGUI
  */
 public class PasswordPanel extends javax.swing.JPanel {
