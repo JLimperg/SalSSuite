@@ -28,6 +28,6 @@ ul#navigation li a:hover {
 /*
  * Backreferences
  */
-p.backtotop {
+p.backtotop, p.todocpages {
         text-align: right;
 }
