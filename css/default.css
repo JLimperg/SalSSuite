@@ -1,0 +1,33 @@
+/*
+ * Navigation
+ */
+ul#navigation {
+        margin: 0;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        padding: 0.8em;
+        text-align: center;
+        background-color: green;
+}
+
+ul#navigation li {
+        list-style: none;
+        display: inline;
+        margin: 0.4em; padding: 0;
+}
+
+ul#navigation li a {
+        color: white;
+        text-decoration: none;
+}
+
+ul#navigation li a:hover {
+        color: black;
+}
+
+/*
+ * Backreferences
+ */
+p.backtotop {
+        text-align: right;
+}
