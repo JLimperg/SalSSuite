@@ -2,6 +2,9 @@
 SalSSuite README
 ================
 
+This project is discontinued and will not receive any updates for the time being.
+---------------------------------------------------------------------------------
+
 This file merely provides an overview for developers about the SalSSuite
 and its Git repository at github.com. User documentation is not available
 at the moment. The javadoc gives fairly detailed explanations of all
